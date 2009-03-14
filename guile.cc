@@ -1,3 +1,21 @@
+/*
+  VPMS - Penna Model Simulation
+  
+  Copyleft 2009: <Mikolaj Sitarz> sitarz@gmail.com
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation,  version 3
+  
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+   
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include <libguile.h>
 #include <iostream>
 #include "vpms.hh"
@@ -17,12 +35,16 @@ inline void putConfig(configParams par, string expected, string name, double val
   }
 }
 
-SCM read_config() {
+extern "C" SCM read_config() {
 
   SCM lsymbol = scm_c_lookup("config");
   SCM list = scm_variable_ref(lsymbol);
   int lsize = scm_to_uint(scm_length(list)); 
   SCM retVal = scm_from_bool(1);
+
+
+
+  scm_dynwind_begin ((scm_t_dynwind_flags)0);
 
    for(int i=0; i<lsize; i++) {
     SCM sublist = scm_list_ref(list,scm_from_int(i));
@@ -35,6 +57,8 @@ SCM read_config() {
     SCM refName  = scm_list_ref(sublist,scm_from_int(0));
     SCM refValue = scm_list_ref(sublist,scm_from_int(1));
 
+
+
     char *varName = scm_to_locale_string(scm_symbol_to_string(refName));
     double varValue = scm_to_double(refValue);
     
@@ -46,13 +70,19 @@ SCM read_config() {
     putConfig(P,         string("P"),string(varName),varValue);
     putConfig(initGenome,string("initGenome"),string(varName),varValue);
     putConfig(rndSeed,   string("rndSeed"),string(varName),varValue);
+
+    scm_dynwind_free (varName);
+
    }
+
+   scm_dynwind_end ();
+
    cout << cfg << endl;
    initialize();
    return retVal;
 }
 
-SCM make_environment(SCM param) {
+extern "C" SCM make_environment(SCM param) {
 
   delete env;
   env = new Environment();
@@ -70,7 +100,7 @@ void show_welcome() {
   cout << "under certain conditions; see LICENSE file details." << endl << endl;
 }
 
-SCM show_warranty() {
+extern "C" SCM show_warranty() {
   cout << endl;
   cout << "THERE IS NO WARRANTY FOR THE PROGRAM, TO THE EXTENT PERMITTED BY" << endl;
   cout << "APPLICABLE LAW.  EXCEPT WHEN OTHERWISE STATED IN WRITING THE COPYRIGHT" << endl;
