@@ -1,8 +1,7 @@
 /*
   VPMS - Penna Model Simulation
   
-  Copyleft: <Mikolaj Sitarz> sitarz@gmail.com
-  2009
+  Copyleft 2009: <Mikolaj Sitarz> sitarz@gmail.com
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
