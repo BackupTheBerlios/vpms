@@ -70,6 +70,10 @@ inline genome *mutateGenome(const genome &g) {
 
 Environment::Environment(): genomes(p.N) {
   nindividuals = 0;
+  born = 0;
+  vkilled = 0;
+  mkilled = 0;
+  tstep = 0;
 }
 
 Environment::~Environment() {
@@ -136,23 +140,25 @@ void Environment::Clear() {
       print_genome(iter->first);
 #endif
       genomes.erase(iter);
-
+      delete gd;
     }
   }
 }
 
 void Environment::Step() {
-  unordered_map<genome, GenomeData *>::iterator iter;
+  unordered_map<genome, GenomeData *>::iterator iter, iend;
 
-  unsigned int mkilled = 0;
-  unsigned int vkilled = 0;
-  unsigned int born = 0;
+  this->mkilled = 0;
+  this->vkilled = 0;
+  this->born = 0;
+
   double vfactor = static_cast<double>(this->nindividuals) / p.N;
 
   list<BornGenome *> waitingRoom;
 
   // run over genomes and perform aging, killing and calc birth
-  for(iter=genomes.begin(); iter != genomes.end(); iter++) {
+  iend = genomes.end();
+  for(iter=genomes.begin(); iter != iend; iter++) {
     GenomeData *gd = iter->second;
     if(gd->Size() > 0) {
       unsigned int newborn = 0;
@@ -188,14 +194,66 @@ void Environment::Step() {
   // update number of individuals
   nindividuals -= (vkilled + mkilled);
 
-
+  tstep += 1;
 }
 
+RuntimeParams Environment::Runtime() {
+  RuntimeParams p;
+  p.nindividuals = nindividuals;
+  p.born = born;
+  p.mkilled = mkilled;
+  p.vkilled = vkilled;
+
+  return p;
+}
+
+// to be removed -  MortStructure() i sufficient
+vector <unsigned int> Environment::PopStructure() {
+  vector <unsigned int> pop(sizeof(int)*8,0u);
+  unordered_map<genome, GenomeData *>::iterator iter, iend;
+  iend = genomes.end();
+
+  for(iter=genomes.begin(); iter != iend; iter++ ) {
+    GenomeData *gd = iter->second;
+    gd->UpdatePopStats(pop);
+  }
+
+  return pop;
+}
+
+/**
+   Calculate mortality caused by genetic reasons
+   for whole population.
+   Method should be called after the "Step" is done.
+ */
+vector <double> Environment::MortStructure() {
+  vector <unsigned int> pop(sizeof(int)*8,0u);
+  vector <unsigned int> mkill(sizeof(int)*8,0u);
+
+  unordered_map<genome, GenomeData *>::iterator iter, iend;
+  iend = genomes.end();
+  for(iter=genomes.begin(); iter != iend; iter++) {
+    GenomeData *gd = iter->second;
+    gd->UpdateMortStats(pop,mkill);
+  }
+  
+  vector<double> mortality(pop.size(),0.0);
+  for(unsigned int i=0; i<pop.size(); i++) {
+    if(pop[i] != 0) {
+      mortality[i] = static_cast<double>(mkill[i]) / pop[i];
+    }
+    else {
+      mortality[i] = 0.0;
+    }
+  }
+
+  return mortality;
+}
 
 GenomeData::GenomeData(genome g) {
   maxage=count_max_age(g);
   ages = new unsigned int[maxage];
-  memset(ages,0u,maxage);
+  memset(ages,0u,maxage*sizeof(unsigned int));
   nindividuals = 0u;
 }
 
@@ -213,7 +271,7 @@ void GenomeData::AddIndividual(unsigned int age) {
 
 // make individuals older and perform genetic death
 // @return number of genetically killed individuals
-unsigned int GenomeData::MakeOlder() { // FIXME sprawdz tutaj
+unsigned int GenomeData::MakeOlder() { 
   unsigned int nkilled = ages[maxage-1];
   nindividuals -= nkilled;
   for(int i=maxage-1; i > 0; i--) {
@@ -254,3 +312,16 @@ unsigned int GenomeData::Size() const {
 }
 
 
+// to be removed
+void GenomeData::UpdatePopStats(vector<unsigned int> &pop) const {
+  for(int i=0; i<maxage; i++) {
+    pop[i] += ages[i];
+  }
+}
+
+void GenomeData::UpdateMortStats(vector<unsigned int> &pop, vector<unsigned int> &mkill) const {
+  for(int i=0; i<maxage; i++) {
+    pop[i] += ages[i];
+  }
+  mkill[maxage-1] += pop[maxage-1];
+}
