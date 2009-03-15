@@ -19,4 +19,3 @@
 
 (welcome)
 (read-config)
-; zrobić handler C-c (w c++)
