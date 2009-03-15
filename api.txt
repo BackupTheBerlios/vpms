@@ -1,0 +1,9 @@
+(read-config) - read configuration from "config" variable
+(create-environment n) - create environment with "n" individuals 
+(print-state) - print current state: number of indiviuals, killed individuals
+        (by mutations and Verhulst factor) and born individuals.
+(get-state) - get state as a list of pairs ('keyword value)
+(get-population) - get population structure
+(get-mortality) - get population mortality
+(do-step n) - do "n" simulation steps (n - optional, default 1)
+(warranty) - display warranty
