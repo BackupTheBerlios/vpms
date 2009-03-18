@@ -1,4 +1,5 @@
 #include <unordered_map>
+#include <map>
 #include <vector>
 
 #include "vpms.hh"
@@ -36,6 +37,7 @@ public:
   void UpdatePopStats(vector<unsigned int> &) const;
   void UpdateMortStats(vector<unsigned int> &, vector<unsigned int> &) const;
 
+
 };
 
 
@@ -60,16 +62,23 @@ public:
   Environment();
   ~Environment();
   void Fill(unsigned int n);
-  void Clear();
   void Step();
+  unsigned int Clear();
  
   unsigned int Size() const {
     return nindividuals;
   }
 
-  vector<unsigned int> PopStructure();
-  vector<double> MortStructure();
-  RuntimeParams Runtime();
+  vector<unsigned int> PopStructure() ;
+  vector<double> MortStructure() ;
+  void UpdateStats(vector<unsigned int> *, vector<unsigned int> *) ;
+  RuntimeParams Runtime() const;
+  unsigned int Time() const;
+  double Diversity() const;
+  
+  multimap<unsigned int, genome> GetTopRank(int n = 8);
+  
+  // TODO genpool histogram
 };
 
 #endif

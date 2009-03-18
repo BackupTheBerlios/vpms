@@ -7,9 +7,9 @@ using namespace std;
 
 double & Config::operator[](configParams cfg)
 {
-
+    
   if (cfg < cfgMax) {
-     return dconfig[cfg];
+    return dconfig[cfg];
   }
   else {
     cerr << "Unknown config parameter: " << cfg << endl;
@@ -17,6 +17,8 @@ double & Config::operator[](configParams cfg)
   }
   
 }
+
+
 
 ostream & operator<<(ostream & out,const Config & cfg) {
   out << setw(13) << "N = " << cfg.dconfig[N] << endl;

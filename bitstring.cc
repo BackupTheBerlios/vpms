@@ -1,4 +1,5 @@
 #include <iostream>
+#include <sstream>
 #include "vpms.hh"
 #include "MersenneTwister.h"
 
@@ -43,6 +44,15 @@ void print_genome(genome g) {
     cerr << static_cast<int>(getbit(g,i));
   }
   cerr << endl;
+}
+
+string get_genome_repr(genome g) {
+  ostringstream rep;
+  for(int i=8*sizeof(g)-1; i>=0; i--) {
+    rep << static_cast<int>(getbit(g,i));
+  }
+  rep << ends;
+  return rep.str();
 }
 
 void addPositiveMutations(genome *g, int n) {

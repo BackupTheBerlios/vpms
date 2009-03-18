@@ -24,12 +24,26 @@
 #include "vpms.hh"
 #include "config.hh"
 #include "model.hh"
+#include "fileio.hh"
+#include "bitstring.hh"
 
 using namespace std;
 
 extern Config cfg;
 extern parameters p;
-extern Environment *env;
+extern Environment * env;
+
+namespace glocal {
+  Logging log;
+  
+};
+
+void logTime(string message, clock_t start, clock_t stop) {
+  ostringstream out;
+  out << message << ": ";
+  out << (static_cast<double>(stop-start)/CLOCKS_PER_SEC) << " sec.";
+  glocal::log << out.str();
+}
 
 
 inline void putConfig(configParams par, string expected, string name, double value) {
@@ -38,58 +52,58 @@ inline void putConfig(configParams par, string expected, string name, double val
   }
 }
 
+inline void saveConfig(SCM key, SCM val) {
+
+  scm_dynwind_begin ((scm_t_dynwind_flags)0);
+  char *varName = scm_to_locale_string(scm_symbol_to_string(key));
+  double varValue = scm_to_double(val);
+  scm_dynwind_free (varName); // collect pointer for further clean-up
+
+  putConfig(N,         string("N"),string(varName),varValue);
+  putConfig(B,         string("B"),string(varName),varValue);
+  putConfig(R,         string("R"),string(varName),varValue);
+  putConfig(T,         string("T"),string(varName),varValue);
+  putConfig(M,         string("M"),string(varName),varValue);
+  putConfig(P,         string("P"),string(varName),varValue);
+  putConfig(initGenome,string("initGenome"),string(varName),varValue);
+  putConfig(rndSeed,   string("rndSeed"),string(varName),varValue);
+
+  scm_dynwind_end ();
+}
+
 void throw_exception(string symbol, string description) {
   scm_throw(scm_str2symbol(symbol.c_str()),
 	    scm_list_1(scm_from_locale_string(description.c_str())));
 }
 
-extern "C" SCM read_config() {
+extern "C" SCM config(SCM list) {
 
-  SCM lsymbol = scm_c_lookup("config");
-  SCM list = scm_variable_ref(lsymbol);
-  int lsize = scm_to_uint(scm_length(list)); 
-  SCM retVal = scm_from_bool(1);
+  if(scm_is_false(scm_list_p(list))) {
+    cout << cfg << endl;
+  }
+  else {
 
-
-
-  scm_dynwind_begin ((scm_t_dynwind_flags)0);
-
-   for(int i=0; i<lsize; i++) {
-    SCM sublist = scm_list_ref(list,scm_from_int(i));
-    int ssize = scm_to_uint(scm_length(sublist));
-    if(ssize != 2) {
-      cerr << "Warning, incorrect config format" << endl;
-      retVal = scm_from_bool(0);
-    }
+    SCM element;
+    do {
+      element = scm_car(list);
+      list    = scm_cdr(list);
+ 
+      SCM key = scm_car(element);
+      SCM val = scm_cadr(element);
+      
+      saveConfig(key, val);
+      
+    }  while(scm_is_false(scm_null_p(list) )) ;
+    initialize();
     
-    SCM refName  = scm_list_ref(sublist,scm_from_int(0));
-    SCM refValue = scm_list_ref(sublist,scm_from_int(1));
-
-
-
-    char *varName = scm_to_locale_string(scm_symbol_to_string(refName));
-    double varValue = scm_to_double(refValue);
-    scm_dynwind_free (varName); // collect pointer for further clean-up
-    
-    putConfig(N,         string("N"),string(varName),varValue);
-    putConfig(B,         string("B"),string(varName),varValue);
-    putConfig(R,         string("R"),string(varName),varValue);
-    putConfig(T,         string("T"),string(varName),varValue);
-    putConfig(M,         string("M"),string(varName),varValue);
-    putConfig(P,         string("P"),string(varName),varValue);
-    putConfig(initGenome,string("initGenome"),string(varName),varValue);
-    putConfig(rndSeed,   string("rndSeed"),string(varName),varValue);
-
-
-
-   }
-
-   scm_dynwind_end ();
-
-   cout << cfg << endl;
-   initialize();
-   return retVal;
+    ostringstream msg;
+    msg << "set up config to: " << endl << cfg;
+    glocal::log << msg.str();
+  }
+ 
+  return scm_from_bool(1);
 }
+
 
 void check_environment() {
   if (env == NULL) {
@@ -102,38 +116,23 @@ extern "C" SCM get_state() {
   check_environment();
 
   RuntimeParams rp = env->Runtime();
-  SCM scm_nindividuals =  scm_cons(
+  SCM scm_nindividuals =  scm_list_2(
 				   scm_str2symbol("nindividuals") ,
 				   scm_uint2num(rp.nindividuals));
 
-  SCM scm_born  =  scm_cons(
+  SCM scm_born  =  scm_list_2(
 			    scm_str2symbol("born") ,
 			    scm_uint2num(rp.born));
 
-  SCM scm_mkilled =  scm_cons(
+  SCM scm_mkilled =  scm_list_2(
 			      scm_str2symbol("mkilled") ,
 			      scm_uint2num(rp.mkilled));
-  SCM scm_vkilled =  scm_cons(
+  SCM scm_vkilled =  scm_list_2(
 			      scm_str2symbol("vkilled") ,
 			      scm_uint2num(rp.vkilled));
 
   return scm_list_4(scm_nindividuals, scm_born, scm_mkilled, scm_vkilled);
 
-}
-
-extern "C" SCM print_state() {
-
-  check_environment();
-  RuntimeParams rp = env->Runtime();
-
-  cout << endl;
-  cout << setw(15) << "individuals = " << rp.nindividuals << endl;
-  cout << setw(15) << "born = " << rp.born << endl;
-  cout << setw(15) << "mkilled = " << rp.mkilled << endl;
-  cout << setw(15) << "vkilled = " << rp.vkilled << endl;
-  cout << flush;
-
-  return scm_from_bool(1);
 }
 
 extern "C" SCM get_population() {
@@ -143,7 +142,8 @@ extern "C" SCM get_population() {
   SCM plist = scm_list(SCM_EOL);
 
   for(unsigned int i=0; i<pop.size(); i++) {
-    plist = scm_append(scm_list_2(plist, scm_list_1(scm_uint2num(pop[i]))));
+    SCM entry = scm_list_1(scm_list_2(scm_uint2num(i), scm_uint2num(pop[i]) ));
+    plist = scm_append(scm_list_2(plist, entry));
   }
   
   return plist;
@@ -155,44 +155,121 @@ extern "C" SCM get_mortality() {
   SCM plist = scm_list(SCM_EOL);
 
   for(unsigned int i=0; i<mort.size(); i++) {
-    plist = scm_append(scm_list_2(plist,scm_list_1(scm_double2num(mort[i]))));
+    SCM entry = scm_list_1(scm_list_2(scm_uint2num(i), scm_double2num(mort[i])));
+    plist = scm_append(scm_list_2(plist,entry));
   }
   return plist;
 }
 
+extern "C" SCM get_genome_ranking(SCM number) {
+  check_environment();
+  int rankSize=8;
+
+  if(scm_is_true(scm_integer_p(number))) {
+    rankSize = scm_to_int(number);
+  }
+
+  time_t cstart=clock();
+  multimap<unsigned int, genome> result = env->GetTopRank(rankSize);
+  time_t cstop=clock();
+
+  ostringstream buf;
+  buf << "calculated top genome rank for " << rankSize << " genomes";
+  logTime(buf.str(),cstart,cstop);
+
+  multimap<unsigned int, genome>::reverse_iterator iter;
+
+  SCM retlist = scm_list(SCM_EOL);
+
+  for(iter=result.rbegin(); iter != result.rend(); iter++ ) {
+    unsigned int nindividuals = iter->first;
+    string strGenome = get_genome_repr(iter->second);
+
+    SCM current = scm_list_2(scm_int2num(nindividuals),scm_from_locale_string(strGenome.c_str()));
+
+    retlist = scm_append(scm_list_2(retlist, scm_list_1(current)));
+							
+  }
+  return retlist;
+}
+
+extern "C" SCM get_time() {
+  check_environment();
+  unsigned int time = env->Time();
+  return scm_uint2num(time);
+}
+
 extern "C" SCM do_step(SCM param) {
   check_environment();
-  unsigned int nsteps = 1;
   
+  SCM ret_val = scm_from_bool(1);
+  unsigned int nsteps = 1;
+  clock_t cstart, cstop;
+
   if (scm_is_true(scm_integer_p(param))){
     nsteps = scm_to_uint(param);
   }
 
-  for(unsigned int i=1; i<=nsteps; i++) {
+  cstart=clock();
+  unsigned int i;
+  for(i=1; i<=nsteps; i++) {
     env->Step();
     if(env->Size() <= 0) {
       cerr << "Population extinct!" << endl;
+      ret_val = scm_from_bool(0);
       break;
     }
     
   }
+  cstop=clock();
+
+  ostringstream msg;
+  msg << "done " << i-1 << " step(s) ";
+  logTime(msg.str(),cstart,cstop);
   
-  return scm_from_bool(1);
+  return ret_val;
+}
+
+extern "C" SCM clear_environment() {
+  clock_t cstart, cstop;
+
+  check_environment();
+
+  cstart=clock();
+  unsigned int count = env->Clear();
+  cstop=clock();
+ 
+  ostringstream msg;
+  msg << "cleared environment, removed " << count << " empty genotypes";
+  logTime(msg.str(),cstart,cstop);
+
+  return scm_from_uint(count);
 }
 
 extern "C" SCM make_environment(SCM param) {
 
+  clock_t cstart = clock();
   delete env;
+  clock_t cstop = clock();
+
+  logTime("deleted old environment (if any)",cstart,cstop);
+
   env = new Environment();
   unsigned int size = scm_to_uint(param);
 
   if(size >= p.N) {
     ostringstream info;
-    info << "Environment fill can not be greater or equal capacity N=" << p.N << ends;
+    info << "Environment fill can not be greater or equal capacity N=" << p.N;
     throw_exception("incorrect-fill-size", info.str());
   }
 
+  cstart = clock();
   env->Fill(size);
+  cstop = clock();
+  
+  ostringstream msg;
+  msg << "Created environment with " << size << " individuals";
+  logTime(msg.str(),cstart,cstop);
 
   return scm_from_bool(1);
 }
@@ -221,14 +298,17 @@ extern "C" SCM show_warranty() {
 void vpms_main (void *closure, int argc, char **argv)
 {
   show_welcome();
-  scm_c_define_gsubr("read-config",0,0,0,read_config);
+
+  scm_c_define_gsubr("config",0,1,0,(SCM (*)()) config);
   scm_c_define_gsubr("create-environment",1,0,0,(SCM (*)() ) make_environment);
   scm_c_define_gsubr("warranty",0,0,0, show_warranty);
   scm_c_define_gsubr("get-state",0,0,0, get_state);
-  scm_c_define_gsubr("print-state",0,0,0,print_state);
   scm_c_define_gsubr("get-population",0,0,0,get_population);
   scm_c_define_gsubr("get-mortality",0,0,0,get_mortality);
+  scm_c_define_gsubr("get-genome-ranking",0,1,0,(SCM (*)()) get_genome_ranking);
+  scm_c_define_gsubr("get-time",0,0,0, get_time);
   scm_c_define_gsubr("do-step",0,1,0,(SCM (*)())do_step);
+  scm_c_define_gsubr("optimize-environment",0,0,0,clear_environment);
   scm_c_primitive_load ("init.scm");
   scm_shell (argc, argv);
 }

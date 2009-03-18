@@ -28,19 +28,21 @@ parameters p;
 MTRand random;
 Config cfg;
 
+
 Environment *env = NULL;
 
 void initialize() {
 
-  p.N = cfg[N];
-  p.B = cfg[B];
-  p.R = cfg[R];
-  p.M = cfg[M];
-  p.P = cfg[P];
-  p.T = cfg[T];
-  p.initGenome = cfg[initGenome];
-  random.seed(cfg[rndSeed]);
+    p.N = cfg[N];
+    p.B = cfg[B];
+    p.R = cfg[R];
+    p.M = cfg[M];
+    p.P = cfg[P];
+    p.T = cfg[T];
+    p.initGenome = cfg[initGenome]; 
+    random.seed(cfg[rndSeed]);
 }
+
 
 int main(int argc, char **argv) {
 

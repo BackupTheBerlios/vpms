@@ -1,9 +1,18 @@
-(read-config) - read configuration from "config" variable
+(config) - display current configuration
+(config (('N 1000) (B 1.3))) - sets two parameters in configuration leaving the rest.
 (create-environment n) - create environment with "n" individuals 
-(print-state) - print current state: number of indiviuals, killed individuals
-        (by mutations and Verhulst factor) and born individuals.
-(get-state) - get state as a list of pairs ('keyword value)
+(do-step n) - do "n" simulation steps (n - optional, default 1)
+(optimize-environment) - clear genomes with no individuals attached (speeds up simulation a lot)
+
+(get-state) - get current state: number of indiviuals, killed individuals
+              (by mutations and Verhulst factor) and born individuals.
 (get-population) - get population structure
 (get-mortality) - get population mortality
-(do-step n) - do "n" simulation steps (n - optional, default 1)
+(get-time) - get time of simulation (time step)
+(get-genome-ranking n) - displays ranking of "n" most represented genomes (n=8 by default)
+
 (warranty) - display warranty
+
+
+Examples:
+(print-list (get-mortality))

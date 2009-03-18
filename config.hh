@@ -26,6 +26,8 @@ class Config {
     dconfig[rndSeed] = 3456; 
   }
 
+
+
 public:
   Config() : cfgMax(32) {
     dconfig = new double[cfgMax];
@@ -35,7 +37,10 @@ public:
   ~Config() { 
     delete [] dconfig;
   }
+
+
   double & operator[](configParams );
+
   friend  ostream & operator<<(ostream &  , const Config &);
 };
 

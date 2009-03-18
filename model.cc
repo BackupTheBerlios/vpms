@@ -25,6 +25,7 @@
 #include "bitstring.hh"
 #include "model.hh"
 #include "vpms.hh"
+#include "stats.hh"
 
 using namespace std;
 
@@ -130,8 +131,9 @@ void Environment::AddIndividual(genome g) {
   nindividuals += 1;
 }
 
-void Environment::Clear() {
+unsigned int Environment::Clear() {
   unordered_map<genome, GenomeData *>::iterator iter;
+  unsigned int count=0;
   for(iter=genomes.begin(); iter != genomes.end(); iter++) {
     GenomeData *gd = iter->second;
     if(gd->Size() == 0) {
@@ -139,10 +141,12 @@ void Environment::Clear() {
       cerr << "erasing genome: ";
       print_genome(iter->first);
 #endif
+      count++;
       genomes.erase(iter);
       delete gd;
     }
   }
+  return count;
 }
 
 void Environment::Step() {
@@ -197,7 +201,7 @@ void Environment::Step() {
   tstep += 1;
 }
 
-RuntimeParams Environment::Runtime() {
+RuntimeParams Environment::Runtime() const {
   RuntimeParams p;
   p.nindividuals = nindividuals;
   p.born = born;
@@ -207,7 +211,18 @@ RuntimeParams Environment::Runtime() {
   return p;
 }
 
-// to be removed -  MortStructure() i sufficient
+unsigned int Environment::Time() const {
+  return tstep;
+}
+
+double Environment::Diversity() const {
+  // TODO 
+  // 1.0 all individuals have the same genome
+  // 0.0 there are no two individuals in population having the same genome
+  return 0.0;
+}
+
+// to be removed -  MortStructure() is sufficient
 vector <unsigned int> Environment::PopStructure() {
   vector <unsigned int> pop(sizeof(int)*8,0u);
   unordered_map<genome, GenomeData *>::iterator iter, iend;
@@ -226,7 +241,7 @@ vector <unsigned int> Environment::PopStructure() {
    for whole population.
    Method should be called after the "Step" is done.
  */
-vector <double> Environment::MortStructure() {
+vector <double> Environment::MortStructure()  {
   vector <unsigned int> pop(sizeof(int)*8,0u);
   vector <unsigned int> mkill(sizeof(int)*8,0u);
 
@@ -234,7 +249,9 @@ vector <double> Environment::MortStructure() {
   iend = genomes.end();
   for(iter=genomes.begin(); iter != iend; iter++) {
     GenomeData *gd = iter->second;
-    gd->UpdateMortStats(pop,mkill);
+    if(gd->Size() > 0) {
+      gd->UpdateMortStats(pop,mkill);
+    }
   }
   
   vector<double> mortality(pop.size(),0.0);
@@ -248,6 +265,36 @@ vector <double> Environment::MortStructure() {
   }
 
   return mortality;
+}
+
+void Environment::UpdateStats(vector<unsigned int> * pop, vector<unsigned int> * mkill)  {
+
+  unordered_map<genome, GenomeData *>::iterator iter, iend;
+  /*  iend = genomes.end();
+  for(iter=genomes.begin(); iter != genomes.end(); iter++) {
+    GenomeData *gd = iter->second;
+    if(gd->Size() > 0) {
+      gd->UpdateMortStats(*pop,*mkill);
+    }
+    } */
+}
+
+multimap<unsigned int, genome> Environment::GetTopRank(int n)  {
+  unordered_map<genome, GenomeData *>::iterator iter, iend;
+
+  TopRank<unsigned int, genome> rank(n);
+
+
+  iend = genomes.end();
+  for(iter=genomes.begin(); iter != genomes.end(); iter++) {
+    GenomeData *gd = iter->second;
+    if(gd->Size() > 0) {
+      rank.Put(gd->Size(),iter->first);
+    }
+  }
+  
+  return rank.GetRank();
+
 }
 
 GenomeData::GenomeData(genome g) {
@@ -312,7 +359,7 @@ unsigned int GenomeData::Size() const {
 }
 
 
-// to be removed
+
 void GenomeData::UpdatePopStats(vector<unsigned int> &pop) const {
   for(int i=0; i<maxage; i++) {
     pop[i] += ages[i];
@@ -323,5 +370,5 @@ void GenomeData::UpdateMortStats(vector<unsigned int> &pop, vector<unsigned int>
   for(int i=0; i<maxage; i++) {
     pop[i] += ages[i];
   }
-  mkill[maxage-1] += pop[maxage-1];
+  mkill[maxage-1] += ages[maxage-1];
 }
