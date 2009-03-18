@@ -26,4 +26,4 @@ fileio.o: fileio.cc $(HEADERS)
 .PHONY: clean
 
 clean:
-	rm -f *.o *~ $(TARGET)
+	rm -f *.o *.gch *~ $(TARGET)
