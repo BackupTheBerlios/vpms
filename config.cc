@@ -50,7 +50,7 @@ ostream & operator<<(ostream & out,const Config & cfg) {
   out << setw(13) << "R = " << vpms::p.R  << endl;
   out << setw(13) << "T = " << vpms::p.T  << endl;
   out << setw(13) << "M = " << vpms::p.M  << endl;
-  out << setw(13) << "VPMS::P = " << vpms::p.P  << endl;
+  out << setw(13) << "P = " << vpms::p.P  << endl;
   out << setw(13) << "initGenome = " << vpms::p.initGenome << endl;
   out << setw(13) << "randomSeed = " << vpms::p.randomSeed << endl;
   return out;
