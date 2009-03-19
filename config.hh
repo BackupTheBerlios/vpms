@@ -1,5 +1,6 @@
 #include <map>
 #include <iostream>
+#include "MersenneTwister.h"
 
 
 using namespace std;
@@ -8,38 +9,53 @@ using namespace std;
 #define CONFIG_H
 
 typedef enum {
-  N,B,R,T,M,P,initGenome,rndSeed,error } configParams ;
+  N,B,R,T,M,P,initGenome,randomSeed,error } configParams ;
+
+typedef struct {
+
+  unsigned long N;
+  double B;
+  int R;
+  double M;
+  double P;
+  int T;
+
+  double initGenome;
+  int randomSeed;
+
+} parameters ;
+
+
+namespace vpms {
+  extern MTRand random;
+  extern parameters p;
+}
+
+
 
 class Config {
 
-  const int cfgMax; 
-  double * dconfig;
 
   void initialize() {
-    dconfig[N] = 100;
-    dconfig[B] = 1.2;
-    dconfig[R] = 3;
-    dconfig[T] = 1;
-    dconfig[M] = 1.0;
-    dconfig[P] = 0.0;
-    dconfig[initGenome] = 0.5;
-    dconfig[rndSeed] = 3456; 
+    vpms::p.N = 10000;
+    vpms::p.B = 1.2;
+    vpms::p.R = 3;
+    vpms::p.T = 1;
+    vpms::p.M = 1.0;
+    vpms::p.P = 0.05;
+    vpms::p.initGenome = 0.5;
+    vpms::p.randomSeed = 3456; 
+    vpms::random.seed(vpms::p.randomSeed);
   }
 
 
 
 public:
-  Config() : cfgMax(32) {
-    dconfig = new double[cfgMax];
+  Config() {
     initialize();
   }
 
-  ~Config() { 
-    delete [] dconfig;
-  }
-
-
-  double & operator[](configParams );
+  void SetParam(configParams, double);
 
   friend  ostream & operator<<(ostream &  , const Config &);
 };

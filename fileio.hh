@@ -10,10 +10,12 @@ class Logging {
   
   string logName;
   ofstream logFile;
+  bool displayOnScreen;
   
 public:
   Logging();
   ~Logging();
+  void SetScreenDisplay(bool);
 
   template <class MsgType>
   Logging & operator<<(MsgType);
@@ -30,9 +32,12 @@ Logging & Logging::operator<<(MsgType message) {
 
   if(logFile) {
     logFile << "[" << strtime << "]: ";
-    logFile << message << endl << flush;
+    logFile << message << endl;
   }
-  cout << message << endl << flush;
+  
+  if(displayOnScreen) {
+    cout << message << endl << flush;
+  }
 
   return *this;
 }

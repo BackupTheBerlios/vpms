@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "vpms.hh"
+#include "config.hh"
 
 using namespace std;
 
@@ -18,13 +19,20 @@ typedef struct  {
   
 } RuntimeParams;
 
+namespace vpms {
+ string get_genome_repr(genome g);
+}
+
 
 class GenomeData {
+  
   unsigned char maxage;
   unsigned int nindividuals;
   unsigned int *ages;
+  
 
 public:
+
   GenomeData(genome g);
   ~GenomeData();
   void  AddIndividual(unsigned int = 0);
@@ -36,14 +44,20 @@ public:
 
   void UpdatePopStats(vector<unsigned int> &) const;
   void UpdateMortStats(vector<unsigned int> &, vector<unsigned int> &) const;
+  inline int CountMaxAge(genome g);
 
 
 };
 
 
 class Environment {
-  //  unordered_map<genome,GenomeData , hash<genome>, eqgen> genomes;
 
+  struct BornGenome {
+    unsigned int nborn;
+    genome baseGenome;
+  };
+
+ 
   unordered_map<genome,GenomeData *> genomes;
   unsigned int nindividuals;
   unsigned int born;
@@ -52,11 +66,8 @@ class Environment {
   unsigned int tstep;
 
   void AddIndividual(genome);
-
-  struct BornGenome {
-    unsigned int nborn;
-    genome baseGenome;
-  };
+  
+ 
 
 public:
   Environment();

@@ -25,30 +25,27 @@
 #include "config.hh"
 #include "model.hh"
 #include "fileio.hh"
-#include "bitstring.hh"
 
 using namespace std;
 
-extern Config cfg;
-extern parameters p;
-extern Environment * env;
-
-namespace glocal {
+namespace vpms {
+  extern Environment * env;
+  extern Config cfg;
   Logging log;
-  
-};
+}
+
 
 void logTime(string message, clock_t start, clock_t stop) {
   ostringstream out;
   out << message << ": ";
   out << (static_cast<double>(stop-start)/CLOCKS_PER_SEC) << " sec.";
-  glocal::log << out.str();
+  vpms::log << out.str();
 }
 
 
 inline void putConfig(configParams par, string expected, string name, double value) {
   if(expected == name) {
-    cfg[par] = value;
+    vpms::cfg.SetParam(par,value);
   }
 }
 
@@ -66,7 +63,7 @@ inline void saveConfig(SCM key, SCM val) {
   putConfig(M,         string("M"),string(varName),varValue);
   putConfig(P,         string("P"),string(varName),varValue);
   putConfig(initGenome,string("initGenome"),string(varName),varValue);
-  putConfig(rndSeed,   string("rndSeed"),string(varName),varValue);
+  putConfig(randomSeed,   string("randomSeed"),string(varName),varValue);
 
   scm_dynwind_end ();
 }
@@ -79,7 +76,7 @@ void throw_exception(string symbol, string description) {
 extern "C" SCM config(SCM list) {
 
   if(scm_is_false(scm_list_p(list))) {
-    cout << cfg << endl;
+    cout << vpms::cfg << endl;
   }
   else {
 
@@ -94,11 +91,10 @@ extern "C" SCM config(SCM list) {
       saveConfig(key, val);
       
     }  while(scm_is_false(scm_null_p(list) )) ;
-    initialize();
     
     ostringstream msg;
-    msg << "set up config to: " << endl << cfg;
-    glocal::log << msg.str();
+    msg << "set up config to: " << endl << vpms::cfg;
+    vpms::log << msg.str();
   }
  
   return scm_from_bool(1);
@@ -106,7 +102,7 @@ extern "C" SCM config(SCM list) {
 
 
 void check_environment() {
-  if (env == NULL) {
+  if (vpms::env == NULL) {
     throw_exception("environment-not-created","Environment not created yet!");
   }
 }
@@ -115,7 +111,7 @@ extern "C" SCM get_state() {
 
   check_environment();
 
-  RuntimeParams rp = env->Runtime();
+  RuntimeParams rp = vpms::env->Runtime();
   SCM scm_nindividuals =  scm_list_2(
 				   scm_str2symbol("nindividuals") ,
 				   scm_uint2num(rp.nindividuals));
@@ -137,7 +133,7 @@ extern "C" SCM get_state() {
 
 extern "C" SCM get_population() {
   check_environment();
-  vector<unsigned int> pop = env->PopStructure();
+  vector<unsigned int> pop = vpms::env->PopStructure();
 
   SCM plist = scm_list(SCM_EOL);
 
@@ -151,7 +147,7 @@ extern "C" SCM get_population() {
 
 extern "C" SCM get_mortality() {
   check_environment();
-  vector<double> mort = env->MortStructure();
+  vector<double> mort = vpms::env->MortStructure();
   SCM plist = scm_list(SCM_EOL);
 
   for(unsigned int i=0; i<mort.size(); i++) {
@@ -170,7 +166,7 @@ extern "C" SCM get_genome_ranking(SCM number) {
   }
 
   time_t cstart=clock();
-  multimap<unsigned int, genome> result = env->GetTopRank(rankSize);
+  multimap<unsigned int, genome> result = vpms::env->GetTopRank(rankSize);
   time_t cstop=clock();
 
   ostringstream buf;
@@ -183,7 +179,7 @@ extern "C" SCM get_genome_ranking(SCM number) {
 
   for(iter=result.rbegin(); iter != result.rend(); iter++ ) {
     unsigned int nindividuals = iter->first;
-    string strGenome = get_genome_repr(iter->second);
+    string strGenome = vpms::get_genome_repr(iter->second);
 
     SCM current = scm_list_2(scm_int2num(nindividuals),scm_from_locale_string(strGenome.c_str()));
 
@@ -195,7 +191,7 @@ extern "C" SCM get_genome_ranking(SCM number) {
 
 extern "C" SCM get_time() {
   check_environment();
-  unsigned int time = env->Time();
+  unsigned int time = vpms::env->Time();
   return scm_uint2num(time);
 }
 
@@ -213,8 +209,8 @@ extern "C" SCM do_step(SCM param) {
   cstart=clock();
   unsigned int i;
   for(i=1; i<=nsteps; i++) {
-    env->Step();
-    if(env->Size() <= 0) {
+    vpms::env->Step();
+    if(vpms::env->Size() <= 0) {
       cerr << "Population extinct!" << endl;
       ret_val = scm_from_bool(0);
       break;
@@ -236,7 +232,7 @@ extern "C" SCM clear_environment() {
   check_environment();
 
   cstart=clock();
-  unsigned int count = env->Clear();
+  unsigned int count = vpms::env->Clear();
   cstop=clock();
  
   ostringstream msg;
@@ -248,23 +244,23 @@ extern "C" SCM clear_environment() {
 
 extern "C" SCM make_environment(SCM param) {
 
-  clock_t cstart = clock();
-  delete env;
+    clock_t cstart = clock();
+  delete vpms::env;
   clock_t cstop = clock();
 
   logTime("deleted old environment (if any)",cstart,cstop);
 
-  env = new Environment();
+  vpms::env = new Environment();
   unsigned int size = scm_to_uint(param);
 
-  if(size >= p.N) {
+  if(size >= vpms::p.N) {
     ostringstream info;
-    info << "Environment fill can not be greater or equal capacity N=" << p.N;
+    info << "Environment fill can not be greater or equal capacity N=" << vpms::p.N;
     throw_exception("incorrect-fill-size", info.str());
   }
 
   cstart = clock();
-  env->Fill(size);
+  vpms::env->Fill(size);
   cstop = clock();
   
   ostringstream msg;
@@ -274,7 +270,13 @@ extern "C" SCM make_environment(SCM param) {
   return scm_from_bool(1);
 }
 
-void show_welcome() {
+extern "C" SCM set_logging(SCM loggingb) {
+  bool blog = scm_is_true(loggingb);
+  vpms::log.SetScreenDisplay(blog);
+  return scm_from_bool(loggingb);
+}
+
+extern "C" void show_welcome() {
   cout << endl;
   cout << "VPMS  Copyright (C) 2009  Mikolaj Sitarz" << endl;
   cout << "This program comes with ABSOLUTELY NO WARRANTY; for details type `(warranty)'." << endl;
@@ -309,6 +311,7 @@ void vpms_main (void *closure, int argc, char **argv)
   scm_c_define_gsubr("get-time",0,0,0, get_time);
   scm_c_define_gsubr("do-step",0,1,0,(SCM (*)())do_step);
   scm_c_define_gsubr("optimize-environment",0,0,0,clear_environment);
+  scm_c_define_gsubr("logging",1,0,0,(SCM (*)()) set_logging);
   scm_c_primitive_load ("init.scm");
   scm_shell (argc, argv);
 }

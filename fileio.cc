@@ -1,13 +1,23 @@
 #include <string>
+#include <sstream>
 #include <fstream>
 #include <iostream>
 #include <ctime>
 #include "fileio.hh"
 #include "compilation.hh"
+#include "model.hh"
 
 using namespace std;
 
-Logging::Logging() : logName("session.log"), logFile(logName.c_str()) {
+namespace vpms {
+  extern Environment *env;
+}
+
+void Logging::SetScreenDisplay(bool dscreen) {
+  displayOnScreen=dscreen;
+}
+
+Logging::Logging() : logName("session.log"), logFile(logName.c_str()), displayOnScreen(true) {
 
     if(!logFile) {
       cerr <<"error: can not write to file: " << logName << endl;
@@ -19,7 +29,9 @@ Logging::Logging() : logName("session.log"), logFile(logName.c_str()) {
 }
 
 Logging::~Logging() {
-  (*this) << "session finished";
+  ostringstream buf;
+  buf << "session finished" << endl;
+  (*this) << buf.str();
   logFile.close();
 }
 

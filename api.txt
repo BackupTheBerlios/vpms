@@ -11,6 +11,7 @@
 (get-time) - get time of simulation (time step)
 (get-genome-ranking n) - displays ranking of "n" most represented genomes (n=8 by default)
 
+(logging b) - turn on/off logging (#t/#f)
 (warranty) - display warranty
 
 

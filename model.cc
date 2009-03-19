@@ -20,56 +20,88 @@
 #include <unordered_map>
 #include <cstring>
 #include <list>
+#include <sstream>
 
 #include "MersenneTwister.h"
-#include "bitstring.hh"
 #include "model.hh"
 #include "vpms.hh"
 #include "stats.hh"
 
 using namespace std;
 
-extern MTRand random;
-extern parameters p;
+extern MTRand vpms::random;
 
-struct eqgen {
+namespace vpms {
 
-  bool operator()(const genome& i1, const genome& i2) const {
-    return i1 == i2;
+  // get bit at position "p" from char "x"
+  unsigned char getbit(genome x, unsigned char p) {
+    return (x >> p) & ~((~0) << 1);
   }
 
-};
-
-int calcPrValue(double v) {
-  int n = static_cast<int>(v);
-  if ( v - n > random() ) {
-    n++;
+  // set bit "value" at position "p" in char "c"
+  void setbit(genome *x, unsigned char p, unsigned char value) {
+    if(value)
+      *x = (value << p) | *x ;
+    else {
+      *x = ~( (~( (~0) << 1 )) << p) & *x ;
+    }
   }
-  return n;
-}
 
-inline genome *mutateGenome(const genome &g) {
-  int nmutations=0;
-  int pmutations=0;
+
+  int calcPrValue(double v) {
+    int n = static_cast<int>(v);
+    if ( v - n > random() ) {
+      n++;
+    }
+    return n;
+  }
+
+  inline void addPositiveMutations(genome *g, int n) {
+    for(int i=1; i<=n; i++) {
+      int pos = static_cast<int>(8*sizeof(genome) * random());
+      setbit(g,pos,0);
+    }
+  }
+
+  inline void addNegativeMutations(genome *g, int n) {
+    for(int i=1; i<=n; i++) {
+      int pos = static_cast<int>(8*sizeof(genome) * random());
+      setbit(g,pos,1);
+    }
+  }
+
+  inline genome *mutateGenome(const genome &g) {
+    int nmutations=0;
+    int pmutations=0;
+    
+    if(vpms::p.M > 0) {
+      nmutations = calcPrValue(vpms::p.M);
+    }
+    if(vpms::p.P > 0) {
+      pmutations = calcPrValue(vpms::p.P);
+    }
+    
+    genome *newGenome = new genome(g);
+    addNegativeMutations(newGenome,nmutations);
+    addPositiveMutations(newGenome,pmutations);
+    return newGenome;
+  }
+
   
-  if(p.M > 0) {
-    nmutations = calcPrValue(p.M);
-  }
-  if(p.P > 0) {
-    pmutations = calcPrValue(p.P);
+  string get_genome_repr(genome g) {
+    ostringstream rep;
+    for(int i=8*sizeof(g)-1; i>=0; i--) {
+      rep << static_cast<int>(getbit(g,i));
+    }
+    rep << ends;
+    return rep.str();
   }
 
-  genome *newGenome = new genome(g);
-  addNegativeMutations(newGenome,nmutations);
-  addPositiveMutations(newGenome,pmutations);
-  return newGenome;
 }
 
 
 
-
-
-Environment::Environment(): genomes(p.N) {
+Environment::Environment(): genomes(vpms::p.N) {
   nindividuals = 0;
   born = 0;
   vkilled = 0;
@@ -95,6 +127,7 @@ Environment::~Environment() {
 
 }
 
+
 void Environment::Fill(unsigned int n) {
 #ifdef DEBUG_LEVEL
   cerr << "filling environment with " << n << " individuals..." << endl;
@@ -103,13 +136,13 @@ void Environment::Fill(unsigned int n) {
   for(unsigned int i=1; i<=n; i++) {
     genome *g = new genome(0u);
     for(unsigned int j=0; j<8*sizeof(g); j++) {
-      setbit(g,j,(random() < p.initGenome)?1:0);
+      vpms::setbit(g,j,(vpms::random() < vpms::p.initGenome)?1:0);
     }
     this->AddIndividual(*g);
 
 #if DEBUG_LEVEL > 1
     cerr << "adding genome: ";
-    print_genome(*g) ;
+    cerr << vpms::get_genome_repr(*g) << endl;
 #endif
   }
 
@@ -139,7 +172,7 @@ unsigned int Environment::Clear() {
     if(gd->Size() == 0) {
 #if DEBUG_LEVEL > 1
       cerr << "erasing genome: ";
-      print_genome(iter->first);
+      vpms::get_genome_repr(iter->first);
 #endif
       count++;
       genomes.erase(iter);
@@ -150,13 +183,14 @@ unsigned int Environment::Clear() {
 }
 
 void Environment::Step() {
+  
   unordered_map<genome, GenomeData *>::iterator iter, iend;
 
   this->mkilled = 0;
   this->vkilled = 0;
   this->born = 0;
 
-  double vfactor = static_cast<double>(this->nindividuals) / p.N;
+  double vfactor = static_cast<double>(this->nindividuals) / vpms::p.N;
 
   list<BornGenome *> waitingRoom;
 
@@ -188,7 +222,7 @@ void Environment::Step() {
     waitingRoom.pop_front();
     
     for(unsigned int i=1; i<=bornInfo->nborn; i++) {
-      genome *g = mutateGenome(bornInfo->baseGenome);
+      genome *g = vpms::mutateGenome(bornInfo->baseGenome);
       AddIndividual(*g);
       delete g; g=NULL;
     }
@@ -202,13 +236,13 @@ void Environment::Step() {
 }
 
 RuntimeParams Environment::Runtime() const {
-  RuntimeParams p;
-  p.nindividuals = nindividuals;
-  p.born = born;
-  p.mkilled = mkilled;
-  p.vkilled = vkilled;
+  RuntimeParams rp;
+  rp.nindividuals = nindividuals;
+  rp.born = born;
+  rp.mkilled = mkilled;
+  rp.vkilled = vkilled;
 
-  return p;
+  return rp;
 }
 
 unsigned int Environment::Time() const {
@@ -297,8 +331,19 @@ multimap<unsigned int, genome> Environment::GetTopRank(int n)  {
 
 }
 
+inline int GenomeData::CountMaxAge(genome g) {
+  int nmut=0;
+  for(unsigned int i=0; i<8*sizeof(genome); i++) {
+    nmut += vpms::getbit(g,i);
+    if(nmut >= vpms::p.T) {
+      return i+1;
+    }
+  }
+  return 8*sizeof(genome);
+}
+
 GenomeData::GenomeData(genome g) {
-  maxage=count_max_age(g);
+  maxage=CountMaxAge(g);
   ages = new unsigned int[maxage];
   memset(ages,0u,maxage*sizeof(unsigned int));
   nindividuals = 0u;
@@ -334,7 +379,7 @@ unsigned int GenomeData::VerhulstKill(double vfactor) {
   for(unsigned int a=1; a < maxage; a++) { // do not kill with a=0
     unsigned int curinds = ages[a];
     for(unsigned int i=1; i <= curinds; i++) {
-       if(random() < vfactor) {
+      if(vpms::random() < vfactor) {
 	 ages[a]--;
 	 nkilled++;
       }
@@ -346,9 +391,9 @@ unsigned int GenomeData::VerhulstKill(double vfactor) {
 
 unsigned int GenomeData::GiveBirth() {
   unsigned int nborn = 0;
-  for(unsigned int a = p.R; a < maxage; a++) {
+  for(unsigned int a = vpms::p.R; a < maxage; a++) {
     for(unsigned int i=1; i<=ages[a]; i++) {
-      nborn += calcPrValue(p.B);
+      nborn += vpms::calcPrValue(vpms::p.B);
     }
   }
   return nborn;

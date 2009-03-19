@@ -4,7 +4,7 @@ CXX=g++
 CXXFLAGS=-Wall -std=c++0x -O2 -march=i686 -fomit-frame-pointer
 LFLAGS=`guile-config link`
 
-SRC      := model.cc bitstring.cc vpms.cc guile.cc config.cc stats.cc fileio.cc
+SRC      := model.cc vpms.cc guile.cc config.cc stats.cc fileio.cc
 HEADERS  := $(SRC:%.cc=%.hh)
 OBJECTS  := $(SRC:%.cc=%.o)
 TARGET   := vpms
