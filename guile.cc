@@ -189,6 +189,45 @@ extern "C" SCM get_genome_ranking(SCM number) {
   return retlist;
 }
 
+extern "C" SCM get_cluster_data() {
+  check_environment();
+
+  map<unsigned int, unsigned int> clusters =  vpms::env->GetClusters();
+  map<unsigned int, unsigned int>::iterator iter, itend;
+  SCM retlist = scm_list(SCM_EOL);
+
+  itend = clusters.end();
+  for(iter=clusters.begin(); iter != itend; iter++){
+    SCM current = scm_list_2(scm_uint2num(iter->first),scm_uint2num(iter->second));
+    retlist = scm_append(scm_list_2(retlist,scm_list_1(current)));
+  }
+  
+
+  return retlist;
+}
+
+extern "C" SCM get_cluster_histogram(SCM param) {
+  check_environment();
+
+  int size = 10;
+  if(scm_is_true(scm_integer_p(param))) {
+    size = scm_to_uint(param);
+  }
+
+  map<unsigned int, unsigned int> clusters =  vpms::env->GetClustersHistogram(size);
+  map<unsigned int, unsigned int>::iterator iter, itend;
+  SCM retlist = scm_list(SCM_EOL);
+
+  itend = clusters.end();
+  for(iter=clusters.begin(); iter != itend; iter++){
+    SCM current = scm_list_2(scm_uint2num(iter->first),scm_uint2num(iter->second));
+    retlist = scm_append(scm_list_2(retlist,scm_list_1(current)));
+  }
+  
+
+  return retlist;
+}
+
 extern "C" SCM get_time() {
   check_environment();
   unsigned int time = vpms::env->Time();
@@ -303,15 +342,20 @@ void vpms_main (void *closure, int argc, char **argv)
 
   scm_c_define_gsubr("config",0,1,0,(SCM (*)()) config);
   scm_c_define_gsubr("create-environment",1,0,0,(SCM (*)() ) make_environment);
-  scm_c_define_gsubr("warranty",0,0,0, show_warranty);
+  scm_c_define_gsubr("optimize-environment",0,0,0,clear_environment);
+  scm_c_define_gsubr("do-step",0,1,0,(SCM (*)())do_step);
+
   scm_c_define_gsubr("get-state",0,0,0, get_state);
   scm_c_define_gsubr("get-population",0,0,0,get_population);
   scm_c_define_gsubr("get-mortality",0,0,0,get_mortality);
   scm_c_define_gsubr("get-genome-ranking",0,1,0,(SCM (*)()) get_genome_ranking);
   scm_c_define_gsubr("get-time",0,0,0, get_time);
-  scm_c_define_gsubr("do-step",0,1,0,(SCM (*)())do_step);
-  scm_c_define_gsubr("optimize-environment",0,0,0,clear_environment);
+  scm_c_define_gsubr("get-clusters",0,0,0, get_cluster_data);
+  scm_c_define_gsubr("get-clusters-histogram",0,1,0,(SCM (*)()) get_cluster_histogram);
+
   scm_c_define_gsubr("logging",1,0,0,(SCM (*)()) set_logging);
+  scm_c_define_gsubr("warranty",0,0,0, show_warranty);
+
   scm_c_primitive_load ("init.scm");
   scm_shell (argc, argv);
 }

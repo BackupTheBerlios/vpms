@@ -9,7 +9,9 @@
 (get-population) - get population structure
 (get-mortality) - get population mortality
 (get-time) - get time of simulation (time step)
-(get-genome-ranking n) - displays ranking of "n" most represented genomes (n=8 by default)
+(get-genome-ranking n) - get ranking of "n" most represented genomes (n=8 by default)
+(get-clusters) - get current genome clusters
+(get-clusters-histogram) - get current genome clusters histogram
 
 (logging b) - turn on/off logging (#t/#f)
 (warranty) - display warranty

@@ -43,5 +43,5 @@
    (M  1.0)
    (P  0.0)
    (initGenome  0.5)
-   (rndSeed 3456)))
+   (randomSeed 3456)))
 

@@ -23,6 +23,7 @@
 #include <sstream>
 
 #include "MersenneTwister.h"
+#include "stats.hh"
 #include "model.hh"
 #include "vpms.hh"
 #include "stats.hh"
@@ -253,6 +254,9 @@ double Environment::Diversity() const {
   // TODO 
   // 1.0 all individuals have the same genome
   // 0.0 there are no two individuals in population having the same genome
+
+  // sredni rozmiar klastra dzielony przez liczbę osobników
+  // przemysleć
   return 0.0;
 }
 
@@ -330,6 +334,51 @@ multimap<unsigned int, genome> Environment::GetTopRank(int n)  {
   return rank.GetRank();
 
 }
+
+map<unsigned int, unsigned int> Environment::GetClusters(){
+  AutoHistogram<unsigned int, unsigned int> hist;
+
+  { // collect data
+    unordered_map<genome,GenomeData *>::iterator iter, itend;
+    itend = genomes.end();
+    for(iter=genomes.begin(); iter != itend; iter++) {
+      unsigned int size = iter->second->Size();
+      if(size > 0) {
+	hist.Put(size,size);
+      }
+    }
+  }
+
+  unordered_map<unsigned int, unsigned int> raw_clusters = hist.GetClusterData();
+  unordered_map<unsigned int, unsigned int>::iterator iter, itend;
+  map<unsigned int, unsigned int> sorted_map;
+
+  itend=raw_clusters.end();
+  for(iter=raw_clusters.begin(); iter != itend; iter++) {
+    sorted_map[iter->first] = iter->second;
+  }
+  return sorted_map;
+}
+
+map<unsigned int, unsigned int> Environment::GetClustersHistogram(int nslices) {
+  AutoHistogram<unsigned int, unsigned int> hist;
+  
+
+  unordered_map<genome,GenomeData *>::iterator iter, itend;
+  itend = genomes.end();
+  for(iter=genomes.begin(); iter != itend; iter++) {
+    unsigned int size = (*(iter->second)).Size();
+    if(size > 0) {
+      hist.Put(size,size);
+    }
+  }
+
+
+
+  return hist.Generate(nslices);
+}
+
+// =============================================================
 
 inline int GenomeData::CountMaxAge(genome g) {
   int nmut=0;

@@ -5,6 +5,7 @@
 #include "vpms.hh"
 #include "config.hh"
 
+
 using namespace std;
 
 #ifndef MODEL_H
@@ -66,9 +67,8 @@ class Environment {
   unsigned int tstep;
 
   void AddIndividual(genome);
-  
- 
 
+  
 public:
   Environment();
   ~Environment();
@@ -88,8 +88,10 @@ public:
   double Diversity() const;
   
   multimap<unsigned int, genome> GetTopRank(int n = 8);
+  map<unsigned int, unsigned int> GetClusters();
+  map<unsigned int, unsigned int> GetClustersHistogram(int slices = 10);
   
-  // TODO genpool histogram
+  
 };
 
 #endif

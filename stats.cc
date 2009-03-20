@@ -2,6 +2,8 @@
 #include "stats.hh"
 #include "model.hh"
 
+using namespace std;
+
 PStats::PStats(): gensize(sizeof(unsigned int)*8) {}
 
 PStats::~PStats() {
@@ -31,8 +33,6 @@ void PStats::Update(Environment *env) {
   
 
 }
-
-
 
 
 
