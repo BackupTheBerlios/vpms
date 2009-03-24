@@ -2,6 +2,7 @@
 
 (use-modules (ice-9 popen))
 (use-modules (ice-9 syncase))
+(load "lib.scm")
 
 (define gnuplot-command "gnuplot")
 (define gnuplot-port #f)
@@ -21,11 +22,6 @@
   (display "set " gnuplot-port)
   (display param gnuplot-port)
   (newline gnuplot-port))
-
-(define-syntax dolist
-  (syntax-rules ()
-    ((dolist (var vlist) body ...)
-     (for-each (lambda (var) body ...) vlist))))
 
 (define-syntax display-gnuplot-data
   (syntax-rules ()

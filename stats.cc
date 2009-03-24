@@ -7,7 +7,7 @@ using namespace std;
 PStats::PStats(): gensize(sizeof(genome)*8) {}
 
 PStats::~PStats() {
-  list<vector<unsigned int> * >::iterator iter, iend;
+  list<vector<unsigned int> * >::const_iterator iter, iend;
 
   iend = pop_list.end();
   for(iter=pop_list.begin(); iter != iend; iter++) {
@@ -19,6 +19,18 @@ PStats::~PStats() {
     delete *iter;
   }
 
+
+  iend = gen_list.end();
+  for(iter=gen_list.begin(); iter != iend; iter++) {
+    delete *iter;
+  }
+
+  list<map<unsigned int, unsigned int> * >::const_iterator iterm, iendm;
+
+  iendm  = clust_list.end();
+  for(iterm=clust_list.begin(); iterm != iendm; iterm++) {
+    delete *iterm;
+  }
 
 }
 

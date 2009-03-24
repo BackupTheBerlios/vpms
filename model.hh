@@ -82,6 +82,8 @@ public:
 
   vector<unsigned int> PopStructure() ;
   vector<double> MortStructure() ;
+  vector<double> GenomeStructure();
+
   void UpdateStats(vector<unsigned int> *, vector<unsigned int> *) ;
   RuntimeParams Runtime() const;
   unsigned int Time() const;

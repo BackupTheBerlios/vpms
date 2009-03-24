@@ -189,6 +189,23 @@ extern "C" SCM get_genome_ranking(SCM number) {
   return retlist;
 }
 
+extern "C" SCM get_genome_distribution() {
+  check_environment();
+
+  time_t cstart=clock();
+  vector<double> gens = vpms::env->GenomeStructure();
+  time_t cstop=clock();
+  logTime("obtained genome structure",cstart,cstop);
+  
+  SCM retlist = scm_list(SCM_EOL);
+  for (unsigned int i=0; i<gens.size(); i++) {
+    SCM current = scm_list_2(scm_uint2num(i),scm_double2num(gens[i]));
+    retlist = scm_append(scm_list_2(retlist,scm_list_1(current)));
+  }
+
+  return retlist;
+}
+
 extern "C" SCM get_cluster_data() {
   check_environment();
 
@@ -250,8 +267,8 @@ extern "C" SCM do_step(SCM param) {
   for(i=1; i<=nsteps; i++) {
     vpms::env->Step();
     if(vpms::env->Size() <= 0) {
-      cerr << "Population extinct!" << endl;
-      ret_val = scm_from_bool(0);
+      cerr << endl << " *** Population extinct! *** " << endl;
+      throw_exception("population-extinct","Population extinct");
       break;
     }
     
@@ -350,8 +367,9 @@ void vpms_main (void *closure, int argc, char **argv)
   scm_c_define_gsubr("get-mortality",0,0,0,get_mortality);
   scm_c_define_gsubr("get-genome-ranking",0,1,0,(SCM (*)()) get_genome_ranking);
   scm_c_define_gsubr("get-time",0,0,0, get_time);
-  scm_c_define_gsubr("get-clusters",0,0,0, get_cluster_data);
+  scm_c_define_gsubr("get-genome-distribution",0,0,0, get_genome_distribution);
   scm_c_define_gsubr("get-clusters-histogram",0,1,0,(SCM (*)()) get_cluster_histogram);
+  scm_c_define_gsubr("_vpms-get-clusters",0,0,0, get_cluster_data);
 
   scm_c_define_gsubr("logging",1,0,0,(SCM (*)()) set_logging);
   scm_c_define_gsubr("warranty",0,0,0, show_warranty);

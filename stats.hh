@@ -15,6 +15,9 @@ using namespace std;
 class PStats {
   list<vector<unsigned int> * > pop_list;
   list<vector<unsigned int> * > mkill_list;
+  list<vector<unsigned int> * > gen_list;
+  list<map<unsigned int, unsigned int> * > clust_list;
+
   const int gensize;
   
 public:

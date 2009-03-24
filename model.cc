@@ -280,8 +280,8 @@ vector <unsigned int> Environment::PopStructure() {
    Method should be called after the "Step" is done.
  */
 vector <double> Environment::MortStructure()  {
-  vector <unsigned int> pop(sizeof(int)*8,0u);
-  vector <unsigned int> mkill(sizeof(int)*8,0u);
+  vector <unsigned int> pop(sizeof(genome)*8,0u);
+  vector <unsigned int> mkill(sizeof(genome)*8,0u);
 
   unordered_map<genome, GenomeData *>::const_iterator iter, iend;
   iend = genomes.end();
@@ -305,11 +305,38 @@ vector <double> Environment::MortStructure()  {
   return mortality;
 }
 
+vector<double> Environment::GenomeStructure() {
+  vector<double> genstat(sizeof(genome)*8, 0.0);
+  unordered_map<genome, GenomeData *>::const_iterator iter, iend;
+
+  iend=genomes.end();
+  for(iter=genomes.begin(); iter != iend; iter++) {
+    GenomeData *gd = iter->second;
+    
+    unsigned int gdsize = gd->Size();
+    if(gdsize > 0) {
+      genome g = iter->first;
+      for(unsigned int i=0; i<sizeof(genome)*8; i++) {
+	if (vpms::getbit(g,i) == 1) {
+	  genstat[i] += gdsize;
+	}
+      }
+    }
+  }
+
+  double pop_size = static_cast<double>(this->Size());
+  for(unsigned int i=0; i<genstat.size(); i++) {
+    genstat[i] = genstat[i] / pop_size;
+  }
+  
+  return genstat;
+}
+
 void Environment::UpdateStats(vector<unsigned int> * pop, vector<unsigned int> * mkill)  {
 
   unordered_map<genome, GenomeData *>::const_iterator iter, iend;
-    iend = genomes.end();
-  for(iter=genomes.begin(); iter != genomes.end(); iter++) {
+  iend = genomes.end();
+  for(iter=genomes.begin(); iter != iend; iter++) {
     GenomeData *gd = iter->second;
     if(gd->Size() > 0) {
       gd->UpdateMortStats(*pop,*mkill);
@@ -324,7 +351,7 @@ multimap<unsigned int, genome> Environment::GetTopRank(int n)  {
 
 
   iend = genomes.end();
-  for(iter=genomes.begin(); iter != genomes.end(); iter++) {
+  for(iter=genomes.begin(); iter != iend; iter++) {
     GenomeData *gd = iter->second;
     if(gd->Size() > 0) {
       rank.Put(gd->Size(),iter->first);
