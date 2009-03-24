@@ -20,6 +20,7 @@
 #include "model.hh"
 #include "guile.hh"
 #include "config.hh"
+#include "fileio.hh"
 #include "MersenneTwister.h"
 
 using namespace std;
@@ -30,6 +31,7 @@ namespace vpms {
   Environment *env = NULL;
   Config cfg;
   parameters p;
+  Logging log;
 }
 
 

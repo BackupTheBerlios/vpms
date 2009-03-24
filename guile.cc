@@ -31,7 +31,7 @@ using namespace std;
 namespace vpms {
   extern Environment * env;
   extern Config cfg;
-  Logging log;
+  extern Logging log;
 }
 
 
@@ -173,7 +173,7 @@ extern "C" SCM get_genome_ranking(SCM number) {
   buf << "calculated top genome rank for " << rankSize << " genomes";
   logTime(buf.str(),cstart,cstop);
 
-  multimap<unsigned int, genome>::reverse_iterator iter;
+  multimap<unsigned int, genome>::const_reverse_iterator iter;
 
   SCM retlist = scm_list(SCM_EOL);
 
@@ -193,7 +193,7 @@ extern "C" SCM get_cluster_data() {
   check_environment();
 
   map<unsigned int, unsigned int> clusters =  vpms::env->GetClusters();
-  map<unsigned int, unsigned int>::iterator iter, itend;
+  map<unsigned int, unsigned int>::const_iterator iter, itend;
   SCM retlist = scm_list(SCM_EOL);
 
   itend = clusters.end();
@@ -215,7 +215,7 @@ extern "C" SCM get_cluster_histogram(SCM param) {
   }
 
   map<unsigned int, unsigned int> clusters =  vpms::env->GetClustersHistogram(size);
-  map<unsigned int, unsigned int>::iterator iter, itend;
+  map<unsigned int, unsigned int>::const_iterator iter, itend;
   SCM retlist = scm_list(SCM_EOL);
 
   itend = clusters.end();

@@ -4,7 +4,7 @@
 
 using namespace std;
 
-PStats::PStats(): gensize(sizeof(unsigned int)*8) {}
+PStats::PStats(): gensize(sizeof(genome)*8) {}
 
 PStats::~PStats() {
   list<vector<unsigned int> * >::iterator iter, iend;

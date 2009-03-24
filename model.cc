@@ -151,7 +151,7 @@ void Environment::Fill(unsigned int n) {
 }
 
 void Environment::AddIndividual(genome g) {
-  unordered_map<genome, GenomeData *>::iterator iter =  genomes.find(g);
+  unordered_map<genome, GenomeData *>::const_iterator iter =  genomes.find(g);
 
   if(iter != genomes.end()) { // environment already contains genome
     GenomeData *gd = iter->second;
@@ -185,7 +185,7 @@ unsigned int Environment::Clear() {
 
 void Environment::Step() {
   
-  unordered_map<genome, GenomeData *>::iterator iter, iend;
+  unordered_map<genome, GenomeData *>::const_iterator iter, iend;
 
   this->mkilled = 0;
   this->vkilled = 0;
@@ -263,7 +263,7 @@ double Environment::Diversity() const {
 // to be removed -  MortStructure() is sufficient
 vector <unsigned int> Environment::PopStructure() {
   vector <unsigned int> pop(sizeof(int)*8,0u);
-  unordered_map<genome, GenomeData *>::iterator iter, iend;
+  unordered_map<genome, GenomeData *>::const_iterator iter, iend;
   iend = genomes.end();
 
   for(iter=genomes.begin(); iter != iend; iter++ ) {
@@ -283,7 +283,7 @@ vector <double> Environment::MortStructure()  {
   vector <unsigned int> pop(sizeof(int)*8,0u);
   vector <unsigned int> mkill(sizeof(int)*8,0u);
 
-  unordered_map<genome, GenomeData *>::iterator iter, iend;
+  unordered_map<genome, GenomeData *>::const_iterator iter, iend;
   iend = genomes.end();
   for(iter=genomes.begin(); iter != iend; iter++) {
     GenomeData *gd = iter->second;
@@ -307,18 +307,18 @@ vector <double> Environment::MortStructure()  {
 
 void Environment::UpdateStats(vector<unsigned int> * pop, vector<unsigned int> * mkill)  {
 
-  unordered_map<genome, GenomeData *>::iterator iter, iend;
-  /*  iend = genomes.end();
+  unordered_map<genome, GenomeData *>::const_iterator iter, iend;
+    iend = genomes.end();
   for(iter=genomes.begin(); iter != genomes.end(); iter++) {
     GenomeData *gd = iter->second;
     if(gd->Size() > 0) {
       gd->UpdateMortStats(*pop,*mkill);
     }
-    } */
+  }
 }
 
 multimap<unsigned int, genome> Environment::GetTopRank(int n)  {
-  unordered_map<genome, GenomeData *>::iterator iter, iend;
+  unordered_map<genome, GenomeData *>::const_iterator iter, iend;
 
   TopRank<unsigned int, genome> rank(n);
 
@@ -339,7 +339,7 @@ map<unsigned int, unsigned int> Environment::GetClusters(){
   AutoHistogram<unsigned int, unsigned int> hist;
 
   { // collect data
-    unordered_map<genome,GenomeData *>::iterator iter, itend;
+    unordered_map<genome,GenomeData *>::const_iterator iter, itend;
     itend = genomes.end();
     for(iter=genomes.begin(); iter != itend; iter++) {
       unsigned int size = iter->second->Size();
@@ -350,7 +350,7 @@ map<unsigned int, unsigned int> Environment::GetClusters(){
   }
 
   unordered_map<unsigned int, unsigned int> raw_clusters = hist.GetClusterData();
-  unordered_map<unsigned int, unsigned int>::iterator iter, itend;
+  unordered_map<unsigned int, unsigned int>::const_iterator iter, itend;
   map<unsigned int, unsigned int> sorted_map;
 
   itend=raw_clusters.end();
@@ -364,7 +364,7 @@ map<unsigned int, unsigned int> Environment::GetClustersHistogram(int nslices) {
   AutoHistogram<unsigned int, unsigned int> hist;
   
 
-  unordered_map<genome,GenomeData *>::iterator iter, itend;
+  unordered_map<genome,GenomeData *>::const_iterator iter, itend;
   itend = genomes.end();
   for(iter=genomes.begin(); iter != itend; iter++) {
     unsigned int size = (*(iter->second)).Size();

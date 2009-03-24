@@ -32,7 +32,11 @@
               (display i))
           (newline)))
 
+(load "gnuplot.scm")
+(use-modules (vpms gnuplot))
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (welcome)
 
 (config
