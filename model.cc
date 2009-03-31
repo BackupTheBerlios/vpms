@@ -26,7 +26,7 @@
 #include "stats.hh"
 #include "model.hh"
 #include "vpms.hh"
-#include "stats.hh"
+
 
 using namespace std;
 
@@ -116,10 +116,8 @@ Environment::~Environment() {
 #endif
 
   unordered_map<genome, GenomeData *>::iterator iter;
-  iter=genomes.begin();
   for(iter=genomes.begin(); iter != genomes.end(); iter++) {
     GenomeData *gd = iter->second;
-    genomes.erase(iter);
     delete gd;
   } 
 #if DEBUG_LEVEL > 0
@@ -332,14 +330,18 @@ vector<double> Environment::GenomeStructure() {
   return genstat;
 }
 
-void Environment::UpdateStats(vector<unsigned int> * pop, vector<unsigned int> * mkill)  {
+void Environment::UpdateStats(vector<unsigned int> * pop, 
+			      vector<unsigned int> * mkill, 
+			      AutoHistogram<unsigned int, unsigned int> *hist)  {
 
   unordered_map<genome, GenomeData *>::const_iterator iter, iend;
   iend = genomes.end();
   for(iter=genomes.begin(); iter != iend; iter++) {
     GenomeData *gd = iter->second;
-    if(gd->Size() > 0) {
+    unsigned int size = gd->Size();
+    if(size > 0) {
       gd->UpdateMortStats(*pop,*mkill);
+      hist->Put(size,size);
     }
   }
 }

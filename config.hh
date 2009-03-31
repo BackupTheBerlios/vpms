@@ -2,7 +2,6 @@
 #include <iostream>
 #include "MersenneTwister.h"
 
-
 using namespace std;
 
 #ifndef CONFIG_H

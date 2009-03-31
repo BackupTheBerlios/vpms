@@ -12,11 +12,14 @@ using namespace std;
 #ifndef STATS_H
 #define STATS_H
 
+template<class KType,class VType> class AutoHistogram;
+
 class PStats {
   list<vector<unsigned int> * > pop_list;
   list<vector<unsigned int> * > mkill_list;
-  list<vector<unsigned int> * > gen_list;
-  list<map<unsigned int, unsigned int> * > clust_list;
+  list<vector<double> * > gen_list;
+  list<AutoHistogram<unsigned int, unsigned int> * > hist_list;
+  list<unsigned int> time_list;
 
   const int gensize;
   
@@ -24,6 +27,10 @@ public:
   PStats();
   ~PStats();
   void Update(Environment *);  
+  vector<pair<double,double> > GetAvgPopulation();
+  vector<pair<double,double> > GetAvgMortality();
+  vector<pair<double,double> > GetAvgGenome();
+  list<unsigned int> GetTimeList();
 
 };
 
@@ -106,6 +113,16 @@ public:
   }
 
 
+
+};
+
+class SimpleMoments {
+  list<double> data;
+  list<double> squares;
+
+public:
+  void Put(double);
+  pair<double, double> GetMoments();
 
 };
 

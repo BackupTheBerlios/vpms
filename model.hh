@@ -25,6 +25,8 @@ namespace vpms {
 }
 
 
+template<class KType, class VType> class AutoHistogram;
+
 class GenomeData {
   
   unsigned char maxage;
@@ -84,7 +86,7 @@ public:
   vector<double> MortStructure() ;
   vector<double> GenomeStructure();
 
-  void UpdateStats(vector<unsigned int> *, vector<unsigned int> *) ;
+  void UpdateStats(vector<unsigned int> *, vector<unsigned int> *, AutoHistogram<unsigned int, unsigned int> *) ;
   RuntimeParams Runtime() const;
   unsigned int Time() const;
   double Diversity() const;

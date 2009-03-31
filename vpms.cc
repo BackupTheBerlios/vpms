@@ -21,6 +21,7 @@
 #include "guile.hh"
 #include "config.hh"
 #include "fileio.hh"
+#include "stats.hh"
 #include "MersenneTwister.h"
 
 using namespace std;
@@ -32,6 +33,7 @@ namespace vpms {
   Config cfg;
   parameters p;
   Logging log;
+  PStats *stats = NULL;
 }
 
 

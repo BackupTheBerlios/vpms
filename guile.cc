@@ -25,6 +25,7 @@
 #include "config.hh"
 #include "model.hh"
 #include "fileio.hh"
+#include "stats.hh"
 
 using namespace std;
 
@@ -32,8 +33,22 @@ namespace vpms {
   extern Environment * env;
   extern Config cfg;
   extern Logging log;
+  extern PStats *stats;
 }
 
+SCM vectorpd2list(const vector<pair<double, double> > &v) {
+  SCM plist = scm_list(SCM_EOL);
+
+  for(unsigned int i=0; i<v.size(); i++) {
+    SCM entry = scm_list_1(scm_list_3(
+				      scm_uint2num(i), 
+				      scm_double2num(v[i].first),  
+				      scm_double2num(v[i].second) ));
+    plist = scm_append(scm_list_2(plist,entry));
+  }
+  
+  return plist;
+}
 
 void logTime(string message, clock_t start, clock_t stop) {
   ostringstream out;
@@ -104,6 +119,12 @@ extern "C" SCM config(SCM list) {
 void check_environment() {
   if (vpms::env == NULL) {
     throw_exception("environment-not-created","Environment not created yet!");
+  }
+}
+
+void check_avg() {
+  if(vpms::stats == NULL) {
+    throw_exception("stats-not-calculated","Statistics were not calculated yet");
   }
 }
 
@@ -251,12 +272,23 @@ extern "C" SCM get_time() {
   return scm_uint2num(time);
 }
 
-extern "C" SCM do_step(SCM param) {
+extern "C" SCM do_step(SCM param,SCM calc_stats) {
   check_environment();
   
   SCM ret_val = scm_from_bool(1);
   unsigned int nsteps = 1;
   clock_t cstart, cstop;
+
+  bool do_stats=false;
+
+  if(scm_is_true(scm_boolean_p(calc_stats))) {
+    do_stats = scm_to_bool(calc_stats);
+  }
+
+  if(do_stats) {
+    delete vpms::stats;
+    vpms::stats = new PStats();
+  }
 
   if (scm_is_true(scm_integer_p(param))){
     nsteps = scm_to_uint(param);
@@ -266,6 +298,9 @@ extern "C" SCM do_step(SCM param) {
   unsigned int i;
   for(i=1; i<=nsteps; i++) {
     vpms::env->Step();
+    if(do_stats) {
+      vpms::stats->Update(vpms::env);
+    }
     if(vpms::env->Size() <= 0) {
       cerr << endl << " *** Population extinct! *** " << endl;
       throw_exception("population-extinct","Population extinct");
@@ -277,9 +312,34 @@ extern "C" SCM do_step(SCM param) {
 
   ostringstream msg;
   msg << "done " << i-1 << " step(s) ";
+  if(do_stats) {
+    msg << " + average calculations";
+  }
   logTime(msg.str(),cstart,cstop);
   
   return ret_val;
+}
+
+extern "C" SCM get_avg_population() {
+  check_environment();
+  check_avg();
+  return vectorpd2list(vpms::stats->GetAvgPopulation());
+}
+
+extern "C" SCM get_avg_times() {
+  check_environment();
+  check_avg();
+
+  list<unsigned int> times = vpms::stats->GetTimeList();
+  list<unsigned int>::const_iterator iter;
+
+  SCM retlist = scm_list(SCM_EOL);
+
+  for(iter=times.begin(); iter != times.end(); iter++){
+    SCM current = scm_uint2num(*iter);
+    retlist = scm_append(scm_list_2(retlist,scm_list_1(current)));
+  }
+  return retlist;
 }
 
 extern "C" SCM clear_environment() {
@@ -300,8 +360,11 @@ extern "C" SCM clear_environment() {
 
 extern "C" SCM make_environment(SCM param) {
 
-    clock_t cstart = clock();
+  clock_t cstart = clock();
   delete vpms::env;
+  delete vpms::stats;
+  vpms::env = NULL;
+  vpms::stats = NULL;
   clock_t cstop = clock();
 
   logTime("deleted old environment (if any)",cstart,cstop);
@@ -360,7 +423,7 @@ void vpms_main (void *closure, int argc, char **argv)
   scm_c_define_gsubr("config",0,1,0,(SCM (*)()) config);
   scm_c_define_gsubr("create-environment",1,0,0,(SCM (*)() ) make_environment);
   scm_c_define_gsubr("optimize-environment",0,0,0,clear_environment);
-  scm_c_define_gsubr("do-step",0,1,0,(SCM (*)())do_step);
+  scm_c_define_gsubr("do-step",0,2,0,(SCM (*)())do_step);
 
   scm_c_define_gsubr("get-state",0,0,0, get_state);
   scm_c_define_gsubr("get-population",0,0,0,get_population);
@@ -370,6 +433,9 @@ void vpms_main (void *closure, int argc, char **argv)
   scm_c_define_gsubr("get-genome-distribution",0,0,0, get_genome_distribution);
   scm_c_define_gsubr("get-clusters-histogram",0,1,0,(SCM (*)()) get_cluster_histogram);
   scm_c_define_gsubr("_vpms-get-clusters",0,0,0, get_cluster_data);
+
+  scm_c_define_gsubr("get-avg-population",0,0,0,get_avg_population);
+  scm_c_define_gsubr("get-avg-times",0,0,0,get_avg_times);
 
   scm_c_define_gsubr("logging",1,0,0,(SCM (*)()) set_logging);
   scm_c_define_gsubr("warranty",0,0,0, show_warranty);
