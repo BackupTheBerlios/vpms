@@ -19,7 +19,9 @@
                       (z (/ y x)))
                  `(,x ,y ,z)))
              data)))
-                     
+
+(define (do-avg-step . n)
+  (apply do-step (append n '(#t))))
 
 (define (welcome)
   (newline)

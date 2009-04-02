@@ -30,6 +30,8 @@ public:
   vector<pair<double,double> > GetAvgPopulation();
   vector<pair<double,double> > GetAvgMortality();
   vector<pair<double,double> > GetAvgGenome();
+  map<double,double> GetAvgClustersHistogram(int);
+  map<unsigned, pair<double,double> > GetAvgClusters();
   list<unsigned int> GetTimeList();
 
 };
@@ -87,6 +89,9 @@ public:
     }
   }
 
+  KType GetMaxKey() {
+    return max_element(hist.begin(),hist.end())->first;
+  }
 
 
   unordered_map<KType,VType> GetClusterData() {
@@ -120,9 +125,14 @@ class SimpleMoments {
   list<double> data;
   list<double> squares;
 
+  map<double, double> data_map;
+  map<double, double> squa_map;
+
 public:
   void Put(double);
+  void Put(double, double);
   pair<double, double> GetMoments();
+  map<unsigned, pair<double, double> > GetMoments(int);
 
 };
 

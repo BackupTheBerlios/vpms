@@ -36,7 +36,7 @@ namespace vpms {
   extern PStats *stats;
 }
 
-SCM vectorpd2list(const vector<pair<double, double> > &v) {
+SCM vector_pdd2list(const vector<pair<double, double> > &v) {
   SCM plist = scm_list(SCM_EOL);
 
   for(unsigned int i=0; i<v.size(); i++) {
@@ -47,6 +47,34 @@ SCM vectorpd2list(const vector<pair<double, double> > &v) {
     plist = scm_append(scm_list_2(plist,entry));
   }
   
+  return plist;
+}
+
+SCM map_updd2list(const map<unsigned, pair<double, double> > &m) {
+  SCM plist = scm_list(SCM_EOL);
+  map<unsigned, pair<double,double> >::const_iterator it;
+  for(it = m.begin(); it != m.end(); it++) {
+    SCM entry = scm_list_1(scm_list_3(
+				      scm_uint2num(it->first),
+				      scm_double2num(it->second.first),
+				      scm_double2num(it->second.second)));
+    plist = scm_append(scm_list_2(plist,entry));
+  }
+  
+  return plist;
+
+}
+
+SCM map_dd2list(const map<double,double> &m) {
+  SCM plist = scm_list(SCM_EOL);
+  map<double,double>::const_iterator it;
+  
+  for(it=m.begin(); it != m.end(); it++) {
+    SCM entry = scm_list_1(scm_list_2(
+				      scm_double2num(it->first),
+				      scm_double2num(it->second)));
+    plist = scm_append(scm_list_2(plist,entry));
+  }
   return plist;
 }
 
@@ -247,7 +275,7 @@ extern "C" SCM get_cluster_data() {
 extern "C" SCM get_cluster_histogram(SCM param) {
   check_environment();
 
-  int size = 10;
+  int size = 100;
   if(scm_is_true(scm_integer_p(param))) {
     size = scm_to_uint(param);
   }
@@ -320,10 +348,40 @@ extern "C" SCM do_step(SCM param,SCM calc_stats) {
   return ret_val;
 }
 
+extern "C" SCM get_avg_mortality() {
+  check_environment();
+  check_avg();
+  return vector_pdd2list(vpms::stats->GetAvgMortality());
+}
+
+extern "C" SCM get_avg_genome() {
+  check_environment();
+  check_avg();
+  return vector_pdd2list(vpms::stats->GetAvgGenome());
+}
+
+extern "C" SCM get_avg_clusters_histogram(SCM param) {
+  check_environment();
+  check_avg();
+
+  int hsize = 100;
+  if (scm_is_true(scm_integer_p(param))){
+    hsize = scm_to_uint(param);
+  }
+
+  return map_dd2list(vpms::stats->GetAvgClustersHistogram(hsize));
+}
+
+extern "C" SCM get_avg_clusters() {
+  check_environment();
+  check_avg();
+  return map_updd2list(vpms::stats->GetAvgClusters());
+}
+
 extern "C" SCM get_avg_population() {
   check_environment();
   check_avg();
-  return vectorpd2list(vpms::stats->GetAvgPopulation());
+  return vector_pdd2list(vpms::stats->GetAvgPopulation());
 }
 
 extern "C" SCM get_avg_times() {
@@ -435,6 +493,11 @@ void vpms_main (void *closure, int argc, char **argv)
   scm_c_define_gsubr("_vpms-get-clusters",0,0,0, get_cluster_data);
 
   scm_c_define_gsubr("get-avg-population",0,0,0,get_avg_population);
+  scm_c_define_gsubr("get-avg-mortality",0,0,0,get_avg_mortality);
+  scm_c_define_gsubr("get-avg-genome",0,0,0,get_avg_genome);
+  scm_c_define_gsubr("get-avg-clusters",0,0,0,get_avg_clusters);
+  scm_c_define_gsubr("get-avg-clusters-histogram",0,1,0,(SCM (*)()) get_avg_clusters_histogram);
+
   scm_c_define_gsubr("get-avg-times",0,0,0,get_avg_times);
 
   scm_c_define_gsubr("logging",1,0,0,(SCM (*)()) set_logging);
