@@ -23,6 +23,12 @@
   (display param gnuplot-port)
   (newline gnuplot-port))
 
+(define-public (plot-unset param)
+  (init-gnuplot)
+    (display "unset " gnuplot-port)
+    (display param gnuplot-port)
+    (newline gnuplot-port))
+
 (define-syntax display-gnuplot-data
   (syntax-rules ()
     ( (display-gnuplot-data data params)

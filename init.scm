@@ -20,6 +20,19 @@
                  `(,x ,y ,z)))
              data)))
 
+(define (get-clusters-histogram . hsize_list)
+  (let* ((cmax (caar (get-genome-ranking)))
+         (hsize (if (null? hsize_list) 100 (car hsize_list)))
+         (rawhist (_vpms-get-clusters-histogram hsize)))
+    (map (lambda (p)
+           (let* ((x (list-ref p 0))
+                  (y (list-ref p 1))
+                  (z (* (* x 1.0) (/ cmax (* hsize 1.0)))))
+             `(,z ,y)))
+         rawhist)))
+
+    
+
 (define (do-avg-step . n)
   (apply do-step (append n '(#t))))
 

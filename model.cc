@@ -116,7 +116,7 @@ Environment::~Environment() {
 #endif
 
   unordered_map<genome, GenomeData *>::iterator iter;
-  for(iter=genomes.begin(); iter != genomes.end(); iter++) {
+  for(iter=genomes.begin(); iter != genomes.end(); ++iter) {
     GenomeData *gd = iter->second;
     delete gd;
   } 
@@ -132,9 +132,9 @@ void Environment::Fill(unsigned int n) {
   cerr << "filling environment with " << n << " individuals..." << endl;
 #endif
 
-  for(unsigned int i=1; i<=n; i++) {
+  for(unsigned int i=1; i<=n; ++i) {
     genome *g = new genome(0u);
-    for(unsigned int j=0; j<8*sizeof(g); j++) {
+    for(unsigned int j=0; j<8*sizeof(g); ++j) {
       vpms::setbit(g,j,(vpms::random() < vpms::p.initGenome)?1:0);
     }
     this->AddIndividual(*g);
@@ -166,7 +166,7 @@ void Environment::AddIndividual(genome g) {
 unsigned int Environment::Clear() {
   unordered_map<genome, GenomeData *>::iterator iter;
   unsigned int count=0;
-  for(iter=genomes.begin(); iter != genomes.end(); iter++) {
+  for(iter=genomes.begin(); iter != genomes.end(); ++iter) {
     GenomeData *gd = iter->second;
     if(gd->Size() == 0) {
 #if DEBUG_LEVEL > 1
@@ -195,7 +195,7 @@ void Environment::Step() {
 
   // run over genomes and perform aging, killing and calc birth
   iend = genomes.end();
-  for(iter=genomes.begin(); iter != iend; iter++) {
+  for(iter=genomes.begin(); iter != iend; ++iter) {
     GenomeData *gd = iter->second;
     if(gd->Size() > 0) {
       unsigned int newborn = 0;
@@ -220,7 +220,7 @@ void Environment::Step() {
     BornGenome *bornInfo = (*listIter);
     waitingRoom.pop_front();
     
-    for(unsigned int i=1; i<=bornInfo->nborn; i++) {
+    for(unsigned int i=1; i<=bornInfo->nborn; ++i) {
       genome *g = vpms::mutateGenome(bornInfo->baseGenome);
       AddIndividual(*g);
       delete g; g=NULL;
@@ -264,7 +264,7 @@ vector <unsigned int> Environment::PopStructure() {
   unordered_map<genome, GenomeData *>::const_iterator iter, iend;
   iend = genomes.end();
 
-  for(iter=genomes.begin(); iter != iend; iter++ ) {
+  for(iter=genomes.begin(); iter != iend; ++iter ) {
     GenomeData *gd = iter->second;
     gd->UpdatePopStats(pop);
   }
@@ -283,7 +283,7 @@ vector <double> Environment::MortStructure()  {
 
   unordered_map<genome, GenomeData *>::const_iterator iter, iend;
   iend = genomes.end();
-  for(iter=genomes.begin(); iter != iend; iter++) {
+  for(iter=genomes.begin(); iter != iend; ++iter) {
     GenomeData *gd = iter->second;
     if(gd->Size() > 0) {
       gd->UpdateMortStats(pop,mkill);
@@ -291,7 +291,7 @@ vector <double> Environment::MortStructure()  {
   }
   
   vector<double> mortality(pop.size(),0.0);
-  for(unsigned int i=0; i<pop.size(); i++) {
+  for(unsigned int i=0; i<pop.size(); ++i) {
     if(pop[i] != 0) {
       mortality[i] = static_cast<double>(mkill[i]) / pop[i];
     }
@@ -308,13 +308,13 @@ vector<double> Environment::GenomeStructure() {
   unordered_map<genome, GenomeData *>::const_iterator iter, iend;
 
   iend=genomes.end();
-  for(iter=genomes.begin(); iter != iend; iter++) {
+  for(iter=genomes.begin(); iter != iend; ++iter) {
     GenomeData *gd = iter->second;
     
     unsigned int gdsize = gd->Size();
     if(gdsize > 0) {
       genome g = iter->first;
-      for(unsigned int i=0; i<sizeof(genome)*8; i++) {
+      for(unsigned int i=0; i<sizeof(genome)*8; ++i) {
 	if (vpms::getbit(g,i) == 1) {
 	  genstat[i] += gdsize;
 	}
@@ -323,7 +323,7 @@ vector<double> Environment::GenomeStructure() {
   }
 
   double pop_size = static_cast<double>(this->Size());
-  for(unsigned int i=0; i<genstat.size(); i++) {
+  for(unsigned int i=0; i<genstat.size(); ++i) {
     genstat[i] = genstat[i] / pop_size;
   }
   
@@ -336,7 +336,7 @@ void Environment::UpdateStats(vector<unsigned int> * pop,
 
   unordered_map<genome, GenomeData *>::const_iterator iter, iend;
   iend = genomes.end();
-  for(iter=genomes.begin(); iter != iend; iter++) {
+  for(iter=genomes.begin(); iter != iend; ++iter) {
     GenomeData *gd = iter->second;
     unsigned int size = gd->Size();
     if(size > 0) {
@@ -353,7 +353,7 @@ multimap<unsigned int, genome> Environment::GetTopRank(int n)  {
 
 
   iend = genomes.end();
-  for(iter=genomes.begin(); iter != iend; iter++) {
+  for(iter=genomes.begin(); iter != iend; ++iter) {
     GenomeData *gd = iter->second;
     if(gd->Size() > 0) {
       rank.Put(gd->Size(),iter->first);
@@ -370,7 +370,7 @@ map<unsigned int, unsigned int> Environment::GetClusters(){
   { // collect data
     unordered_map<genome,GenomeData *>::const_iterator iter, itend;
     itend = genomes.end();
-    for(iter=genomes.begin(); iter != itend; iter++) {
+    for(iter=genomes.begin(); iter != itend; ++iter) {
       unsigned int size = iter->second->Size();
       if(size > 0) {
 	hist.Put(size,size);
@@ -383,7 +383,7 @@ map<unsigned int, unsigned int> Environment::GetClusters(){
   map<unsigned int, unsigned int> sorted_map;
 
   itend=raw_clusters.end();
-  for(iter=raw_clusters.begin(); iter != itend; iter++) {
+  for(iter=raw_clusters.begin(); iter != itend; ++iter) {
     sorted_map[iter->first] = iter->second;
   }
   return sorted_map;
@@ -395,7 +395,7 @@ map<unsigned int, unsigned int> Environment::GetClustersHistogram(int nslices) {
 
   unordered_map<genome,GenomeData *>::const_iterator iter, itend;
   itend = genomes.end();
-  for(iter=genomes.begin(); iter != itend; iter++) {
+  for(iter=genomes.begin(); iter != itend; ++iter) {
     unsigned int size = (*(iter->second)).Size();
     if(size > 0) {
       hist.Put(size,size);
@@ -411,7 +411,7 @@ map<unsigned int, unsigned int> Environment::GetClustersHistogram(int nslices) {
 
 inline int GenomeData::CountMaxAge(genome g) {
   int nmut=0;
-  for(unsigned int i=0; i<8*sizeof(genome); i++) {
+  for(unsigned int i=0; i<8*sizeof(genome); ++i) {
     nmut += vpms::getbit(g,i);
     if(nmut >= vpms::p.T) {
       return i+1;
@@ -454,12 +454,12 @@ unsigned int GenomeData::MakeOlder() {
 unsigned int GenomeData::VerhulstKill(double vfactor) {
   unsigned int nkilled = 0;
 
-  for(unsigned int a=1; a < maxage; a++) { // do not kill with a=0
+  for(unsigned int a=1; a < maxage; ++a) { // do not kill with a=0
     unsigned int curinds = ages[a];
-    for(unsigned int i=1; i <= curinds; i++) {
+    for(unsigned int i=1; i <= curinds; ++i) {
       if(vpms::random() < vfactor) {
-	 ages[a]--;
-	 nkilled++;
+	 --ages[a];
+	 ++nkilled;
       }
     }
   }
@@ -469,8 +469,8 @@ unsigned int GenomeData::VerhulstKill(double vfactor) {
 
 unsigned int GenomeData::GiveBirth() {
   unsigned int nborn = 0;
-  for(unsigned int a = vpms::p.R; a < maxage; a++) {
-    for(unsigned int i=1; i<=ages[a]; i++) {
+  for(unsigned int a = vpms::p.R; a < maxage; ++a) {
+    for(unsigned int i=1; i<=ages[a]; ++i) {
       nborn += vpms::calcPrValue(vpms::p.B);
     }
   }
@@ -484,13 +484,13 @@ unsigned int GenomeData::Size() const {
 
 
 void GenomeData::UpdatePopStats(vector<unsigned int> &pop) const {
-  for(int i=0; i<maxage; i++) {
+  for(int i=0; i<maxage; ++i) {
     pop[i] += ages[i];
   }
 }
 
 void GenomeData::UpdateMortStats(vector<unsigned int> &pop, vector<unsigned int> &mkill) const {
-  for(int i=0; i<maxage; i++) {
+  for(int i=0; i<maxage; ++i) {
     pop[i] += ages[i];
   }
   mkill[maxage-1] += ages[maxage-1];

@@ -1,0 +1,27 @@
+vpms version: Apr 30 2009 22:16:02
+compilation flags:  -Wall -std=c++0x -O2 -march=i686 -fomit-frame-pointer 
+
+[Mon May  4 21:14:49 2009]: set up config to: 
+         N = 10000
+         B = 1.2
+         R = 6
+         T = 3
+         M = 1
+         P = 0
+initGenome = 0.5
+randomSeed = 3456
+
+[Mon May  4 21:14:51 2009]: deleted old environment (if any): 0 sec.
+[Mon May  4 21:14:51 2009]: Created environment with 4000 individuals: 0 sec.
+[Mon May  4 21:14:54 2009]: done 100 step(s) : 0.31 sec.
+[Mon May  4 21:14:57 2009]: cleared environment, removed 15658 empty genotypes: 0.01 sec.
+[Mon May  4 21:15:04 2009]: done 1000 step(s) : 4.81 sec.
+[Mon May  4 21:15:06 2009]: cleared environment, removed 21748 empty genotypes: 0.02 sec.
+[Mon May  4 21:15:21 2009]: calculated top genome rank for 8 genomes: 0 sec.
+[Mon May  4 21:15:29 2009]: calculated top genome rank for 8 genomes: 0 sec.
+[Mon May  4 21:15:30 2009]: calculated top genome rank for 8 genomes: 0 sec.
+[Mon May  4 21:16:11 2009]: done 1 step(s)  + average calculations: 0 sec.
+[Mon May  4 21:16:25 2009]: calculated top genome rank for 8 genomes: 0 sec.
+[Mon May  4 21:17:00 2009]: calculated top genome rank for 8 genomes: 0 sec.
+[Mon May  4 21:19:58 2009]: session finished
+
