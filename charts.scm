@@ -1,5 +1,3 @@
-(define *image-viewer* "display")
-
 (define (chart-population)
   (plot-set "logscale x")
   (plot-set "xlabel \"age\"")
@@ -46,8 +44,7 @@
   (chart-clusters)
   (plot-set "origin 0.5,0.0")
   (chart-genome)
-  (plot-unset "multiplot")
-  fname)
+  (plot-unset "multiplot"))
 
 
 
@@ -57,8 +54,3 @@
       (do-avg-step (car nsteps)))
   (dump-4-charts (string-concatenate
                 `("chart" ,(format "~6'0d" (get-time)) ".png"))))
-
-(define (display-charts-and-dump-avg)
-  (let ((ofile (save-current-data-chart)))
-    (usleep 100000) ;; wait for gnuplot (mu sec)
-    (system (string-concatenate `(,*image-viewer* " " ,ofile)))))
