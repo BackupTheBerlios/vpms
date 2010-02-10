@@ -208,10 +208,10 @@ void Environment::Step() {
       born    += newborn;      
     
       if (newborn > 0) {
-	BornGenome *bornInfo = new BornGenome();
-	bornInfo->nborn = newborn;
-	bornInfo->baseGenome = iter->first;
-	waitingRoom.push_back(bornInfo);
+          BornGenome *bornInfo = new BornGenome();
+          bornInfo->nborn = newborn;
+          bornInfo->baseGenome = iter->first;
+          waitingRoom.push_back(bornInfo);
       }
     }
   }
