@@ -166,7 +166,7 @@ void Environment::AddIndividual(genome g) {
 unsigned int Environment::Clear() {
   unordered_map<genome, GenomeData *>::iterator iter;
   unsigned int count=0;
-  for(iter=genomes.begin(); iter != genomes.end(); ++iter) {
+  for(iter=genomes.begin(); iter != genomes.end(); ) {
     GenomeData *gd = iter->second;
     if(gd->Size() == 0) {
 #if DEBUG_LEVEL > 1
@@ -174,8 +174,11 @@ unsigned int Environment::Clear() {
       vpms::get_genome_repr(iter->first);
 #endif
       count++;
-      genomes.erase(iter);
+      genomes.erase(iter++);
       delete gd;
+    }
+    else {
+        ++iter;
     }
   }
   return count;
