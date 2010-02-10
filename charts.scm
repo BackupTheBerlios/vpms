@@ -3,6 +3,7 @@
   (plot-set "xlabel \"age\"")
   (plot-set "ylabel \"population\"")
   (plot-set "grid")
+  (plot-unset "key")
   (plot (get-avg-population) "with linespoints"))
 
 (define (chart-mortality)
@@ -10,6 +11,7 @@
   (plot-set "xlabel \"age\"")
   (plot-set "ylabel \"mortality\"")
   (plot-set "grid")
+  (plot-unset "key")
   (plot (get-avg-mortality) "with linespoints"))
 
 (define (chart-clusters)
@@ -17,6 +19,7 @@
   (plot-set "xlabel \"cluster volume\"")
   (plot-set "ylabel \"population\"")
   (plot-set "grid")
+  (plot-unset "key")
   (plot (get-avg-clusters-histogram) "with boxes"))
 
 (define (chart-genome)
@@ -24,9 +27,10 @@
   (plot-set "xlabel \"position\"")
   (plot-set "ylabel \"avg value\"")
   (plot-set "grid")
+  (plot-unset "key")
   (plot (get-avg-genome) "with linespoints"))
 
-(define (dump-charts fname)
+(define (dump-4-charts fname)
   (plot-set "term png size 1024,768")
   (plot-set (string-concatenate `("output \"" ,fname "\"")))
   (plot-set "multiplot")
@@ -44,9 +48,9 @@
 
 
 
-(define (dump-current-data . nsteps)
+(define (save-current-data-chart . nsteps)
   (if (null? nsteps)
       (do-avg-step 20)
       (do-avg-step (car nsteps)))
-  (dump-charts (string-concatenate
+  (dump-4-charts (string-concatenate
                 `("chart" ,(format "~6'0d" (get-time)) ".png"))))
