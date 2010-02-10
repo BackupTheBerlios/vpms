@@ -1,5 +1,7 @@
+(define *image-view-command* "display")
+
 (define (chart-population)
-  (plot-set "logscale x")
+  (plot-set "logscale y")
   (plot-set "xlabel \"age\"")
   (plot-set "ylabel \"population\"")
   (plot-set "grid")
@@ -7,7 +9,7 @@
   (plot (get-avg-population) "with linespoints"))
 
 (define (chart-mortality)
-  (plot-set "logscale x")
+  (plot-set "logscale y")
   (plot-set "xlabel \"age\"")
   (plot-set "ylabel \"mortality\"")
   (plot-set "grid")
@@ -15,7 +17,7 @@
   (plot (get-avg-mortality) "with linespoints"))
 
 (define (chart-clusters)
-  (plot-unset "logscale x")
+  (plot-unset "logscale y")
   (plot-set "xlabel \"cluster volume\"")
   (plot-set "ylabel \"population\"")
   (plot-set "grid")
@@ -23,7 +25,7 @@
   (plot (get-avg-clusters-histogram) "with boxes"))
 
 (define (chart-genome)
-  (plot-unset "logscale x")
+  (plot-unset "logscale y")
   (plot-set "xlabel \"position\"")
   (plot-set "ylabel \"avg value\"")
   (plot-set "grid")
@@ -44,7 +46,8 @@
   (chart-clusters)
   (plot-set "origin 0.5,0.0")
   (chart-genome)
-  (plot-unset "multiplot"))
+  (plot-unset "multiplot")
+  fname)
 
 
 
@@ -54,3 +57,9 @@
       (do-avg-step (car nsteps)))
   (dump-4-charts (string-concatenate
                 `("chart" ,(format "~6'0d" (get-time)) ".png"))))
+
+(define (display-current-chart-and-calc-avg)
+  (let ((fname (save-current-data-chart)))
+    (usleep 100000) ;; wait for gnuplot (mu sec)
+    (system (string-concatenate `(,*image-view-command* " " ,fname)))))
+  
