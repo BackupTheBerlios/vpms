@@ -1,3 +1,5 @@
+Basic commands:
+===============
 (config) - display current configuration
 (config '((N 1000) (B 1.3))) - sets two parameters in configuration leaving the rest.
 (create-environment n) - create environment with "n" individuals 
@@ -5,6 +7,8 @@
                         if #t turns on calculating averages
 (optimize-environment) - clear genomes with no individuals attached (speeds up simulation a lot)
 
+Results:
+========
 (get-state) - get current state: number of indiviuals, killed individuals
               (by mutations and Verhulst factor) and born individuals.
 (get-population) - get population structure
@@ -14,11 +18,23 @@
 (get-clusters) - get current genome clusters
 (get-clusters-histogram) - get current genome clusters histogram
 
-(get-avg-population) - get average population
+Averages:
+=========
+Note: in order to calculate averages, one should use 'do-step' function with calc-avg? equals #t
 
+(get-avg-population) - get average population
+(get-avg-mortality)
+(get-avg-genome)
+(get-avg-clusters)
+(get-avg-clusters-histogram)
+(get-avg-times)
+
+Other commands:
+==============
 (logging b) - turn on/off logging (#t/#f)
 (warranty) - display warranty
 
 
 Examples:
+=========
 (print-list (get-mortality))
