@@ -1,7 +1,5 @@
 (load "lib.scm")
-(load "gnuplot.scm")
 (load "charts.scm")
-(use-modules (vpms gnuplot))
 
 ;;;;;;;
 ; user config section
