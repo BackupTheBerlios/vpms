@@ -1,3 +1,6 @@
+(load "gnuplot.scm")
+(use-modules (vpms gnuplot))
+
 (define *image-view-command* "display")
 
 (define (chart-population)
@@ -60,6 +63,6 @@
 
 (define (display-current-chart-and-calc-avg)
   (let ((fname (save-current-data-chart)))
-    (usleep 100000) ;; wait for gnuplot (mu sec)
+    (usleep 200000) ;; wait for gnuplot (mu sec)
     (system (string-concatenate `(,*image-view-command* " " ,fname)))))
   
