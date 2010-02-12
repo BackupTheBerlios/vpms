@@ -116,6 +116,22 @@ void throw_exception(string symbol, string description) {
 	    scm_list_1(scm_from_locale_string(description.c_str())));
 }
 
+extern "C" SCM get_config() {
+    SCM plist = scm_list(SCM_EOL);
+
+    plist = scm_acons(scm_str2symbol("N"), scm_uint2num(vpms::p.N), plist);
+    plist = scm_acons(scm_str2symbol("B"), scm_double2num(vpms::p.B), plist);
+    plist = scm_acons(scm_str2symbol("R"), scm_int2num(vpms::p.R), plist);
+    plist = scm_acons(scm_str2symbol("M"), scm_double2num(vpms::p.M), plist);
+    plist = scm_acons(scm_str2symbol("P"), scm_double2num(vpms::p.P), plist);
+    plist = scm_acons(scm_str2symbol("T"), scm_int2num(vpms::p.T), plist);
+    plist = scm_acons(scm_str2symbol("initGenome"), scm_double2num(vpms::p.initGenome), plist);
+    plist = scm_acons(scm_str2symbol("randomSeed"), scm_int2num(vpms::p.randomSeed), plist); 
+
+    plist = scm_reverse(plist);
+    return plist;
+}
+
 extern "C" SCM config(SCM list) {
 
   if(scm_is_false(scm_list_p(list))) {
@@ -483,6 +499,7 @@ void vpms_main (void *closure, int argc, char **argv)
   scm_c_define_gsubr("optimize-environment",0,0,0,clear_environment);
   scm_c_define_gsubr("do-step",0,2,0,(SCM (*)())do_step);
 
+  scm_c_define_gsubr("get-config",0,0,0,get_config);
   scm_c_define_gsubr("get-state",0,0,0, get_state);
   scm_c_define_gsubr("get-population",0,0,0,get_population);
   scm_c_define_gsubr("get-mortality",0,0,0,get_mortality);
