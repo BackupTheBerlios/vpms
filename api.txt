@@ -48,4 +48,5 @@ Persistency:
 Examples:
 =========
 (print-list (get-mortality))
-
+(get-num-of-genomes (assoc-ref (get-config) 'R)) - get num of genotypes of
+individuals that reached reproduction age.
