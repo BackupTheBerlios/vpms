@@ -58,8 +58,15 @@
   (if (null? nsteps)
       (do-avg-step 20)
       (do-avg-step (car nsteps)))
-  (dump-4-charts (string-concatenate
-                `("chart" ,(format "~6'0d" (get-time)) ".png"))))
+  (let* ((cfg (get-config))
+	 (N (assoc-ref cfg 'N))
+	 (B (assoc-ref cfg 'B))
+	 (R (assoc-ref cfg 'R))
+	 (M (assoc-ref cfg 'M))
+	 (T (assoc-ref cfg 'T))
+	 (P (assoc-ref cfg 'P)))
+    (dump-4-charts (string-concatenate
+		    `("vp-" ,(format "N~e-B~f-~6'0d" N B (get-time)) ".png")))))
 
 (define (display-current-chart-and-calc-avg)
   (let ((fname (save-current-data-chart)))

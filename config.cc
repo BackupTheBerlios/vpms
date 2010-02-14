@@ -43,6 +43,35 @@ void Config::SetParam(configParams cfg, double value)
     
 }
 
+// write config to file
+void Config::Write(FILE* f) {
+    fwrite(static_cast<void*>(&vpms::p.N),  sizeof(unsigned long),1,f);
+    fwrite(static_cast<void*>(&vpms::p.B),  sizeof(double),1,f);
+    fwrite(static_cast<void*>(&vpms::p.R),  sizeof(int),1,f);
+    fwrite(static_cast<void*>(&vpms::p.M),  sizeof(double),1,f);
+    fwrite(static_cast<void*>(&vpms::p.P),  sizeof(double),1,f);
+    fwrite(static_cast<void*>(&vpms::p.T),  sizeof(int),1,f);
+
+    fwrite(static_cast<void*>(&vpms::p.initGenome),  sizeof(double),1,f);
+    fwrite(static_cast<void*>(&vpms::p.randomSeed),  sizeof(int),1,f);
+    
+    // todo: save generator state
+}
+
+// read config from file
+void Config::Read(FILE* f) {
+    fread(static_cast<void*>(&vpms::p.N),  sizeof(unsigned long),1,f);
+    fread(static_cast<void*>(&vpms::p.B),  sizeof(double),1,f);
+    fread(static_cast<void*>(&vpms::p.R),  sizeof(int),1,f);
+    fread(static_cast<void*>(&vpms::p.M),  sizeof(double),1,f);
+    fread(static_cast<void*>(&vpms::p.P),  sizeof(double),1,f);
+    fread(static_cast<void*>(&vpms::p.T),  sizeof(int),1,f);
+
+    fread(static_cast<void*>(&vpms::p.initGenome),  sizeof(double),1,f);
+    fread(static_cast<void*>(&vpms::p.randomSeed),  sizeof(int),1,f);
+
+}
+
 
 ostream & operator<<(ostream & out,const Config & cfg) {
   out << setw(13) << "N = " << vpms::p.N  << endl;

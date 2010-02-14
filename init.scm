@@ -30,7 +30,20 @@
              `(,z ,y)))
          rawhist)))
 
-    
+
+(define (restore-environment . fname)
+  (newline)
+  (if (null? fname)
+      (_restore-environment)
+      (_restore-environment (car fname)))
+  (newline)
+  (config)
+  (print-list (get-state))
+  (newline)
+  (display (format "time: ~d" (get-time)))
+  (newline)
+  (newline))
+	      
 
 (define (do-avg-step . n)
   (apply do-step (append n '(#t))))

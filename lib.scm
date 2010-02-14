@@ -18,6 +18,6 @@
   (dolist (i lst)
           (if (list? i)
               (dolist (j i)
-                      (display (format "~10a" j)))
+                      (display (format "~15a" j)))
               (display i))
           (newline)))

@@ -26,13 +26,14 @@
 #include "stats.hh"
 #include "model.hh"
 #include "vpms.hh"
-
+#include "fileio.hh"
 
 using namespace std;
 
 extern MTRand vpms::random;
 
 namespace vpms {
+    extern Logging log;
 
   // get bit at position "p" from char "x"
   unsigned char getbit(genome x, unsigned char p) {
@@ -110,6 +111,37 @@ Environment::Environment(): genomes(vpms::p.N) {
   tstep = 0;
 }
 
+Environment::Environment(FILE *f) {
+    fread(static_cast<void*>(&nindividuals),   sizeof(unsigned int),1,f);
+    fread(static_cast<void*>(&born),           sizeof(unsigned int),1,f);
+    fread(static_cast<void*>(&vkilled),        sizeof(unsigned int),1,f);
+    fread(static_cast<void*>(&mkilled),        sizeof(unsigned int),1,f);
+    fread(static_cast<void*>(&tstep),          sizeof(unsigned int),1,f);
+
+    size_t gsize = 0;
+    fread(static_cast<void*>(&gsize), sizeof(size_t),1,f);
+
+    for(size_t i=0; i<gsize; ++i) {
+        genome g;
+
+#if DEBUG_LEVEL > 0
+        ostringstream dbuf;
+        dbuf << "reading genome: " << std::hex;
+        for (unsigned int j=sizeof(genome); j>0; --j) {
+            dbuf <<  (~(~0 << 8) & (g >> 8*(j-1))) << " ";
+        }
+        dbuf << std::dec;
+        vpms::log << dbuf.str();
+#endif
+        fread(static_cast<void*>(&g),  sizeof(genome),1,f);
+        genomes[g] = new GenomeData(f);
+    }
+    ostringstream buf;
+    buf << "read: " << gsize << " genomes data";
+    vpms::log << buf.str();
+
+}
+
 Environment::~Environment() {
 #if DEBUG_LEVEL > 0
   cerr << "Destroying environment..." ;
@@ -126,6 +158,27 @@ Environment::~Environment() {
 
 }
 
+void Environment::Write(FILE* f) {
+    fwrite(static_cast<void*>(&nindividuals),   sizeof(unsigned int),1,f);
+    fwrite(static_cast<void*>(&born),           sizeof(unsigned int),1,f);
+    fwrite(static_cast<void*>(&vkilled),        sizeof(unsigned int),1,f);
+    fwrite(static_cast<void*>(&mkilled),        sizeof(unsigned int),1,f);
+    fwrite(static_cast<void*>(&tstep),          sizeof(unsigned int),1,f);
+
+    size_t gsize = genomes.size();
+    fwrite(static_cast<void*>(&gsize), sizeof(size_t),1,f);
+
+    unordered_map<genome,GenomeData *>::const_iterator it;
+    for(it=genomes.begin(); it != genomes.end(); ++it) {
+        genome g = it->first;
+        fwrite(static_cast<void*>(&g),  sizeof(genome),1,f);
+        it->second->Write(f);
+    }
+    ostringstream buf;
+    buf << "written: " << gsize << " genomes data";
+    vpms::log << buf.str();
+
+}
 
 void Environment::Fill(unsigned int n) {
 #ifdef DEBUG_LEVEL
@@ -374,10 +427,10 @@ map<unsigned int, unsigned int> Environment::GetClusters(){
     unordered_map<genome,GenomeData *>::const_iterator iter, itend;
     itend = genomes.end();
     for(iter=genomes.begin(); iter != itend; ++iter) {
-      unsigned int size = iter->second->Size();
-      if(size > 0) {
-	hist.Put(size,size);
-      }
+        unsigned int size = iter->second->Size();
+        if(size > 0) {
+            hist.Put(size,size);
+        }
     }
   }
 
@@ -497,4 +550,56 @@ void GenomeData::UpdateMortStats(vector<unsigned int> &pop, vector<unsigned int>
     pop[i] += ages[i];
   }
   mkill[maxage-1] += ages[maxage-1];
+}
+
+void GenomeData::Write(FILE *f) {
+    fwrite(static_cast<void*>(&maxage),sizeof(unsigned char),1,f);
+    fwrite(static_cast<void*>(&nindividuals), sizeof(unsigned int),1,f);
+    fwrite(static_cast<void*>(ages),sizeof(unsigned int),maxage,f);
+
+#if DEBUG_LEVEL > 0
+    ostringstream dbuf;
+    dbuf << "nindividuals=" << nindividuals;
+    dbuf << " maxage=" << static_cast<unsigned int>(maxage);
+    dbuf << " ages: " << std::endl;
+    for(int i=0; i<maxage; ++i) {
+        dbuf << ages[i] << " ";
+    }
+    vpms::log << dbuf.str();
+#endif
+
+
+}
+
+GenomeData::GenomeData(FILE *f) {
+    size_t r1s = fread(static_cast<void*>(&maxage),sizeof(unsigned char),1,f);
+    
+    if (maxage > 32) {
+        ostringstream buf;
+        buf << "ERROR: improper maxage value: " << maxage;
+        vpms::log << buf.str();
+    }
+
+    ages = new unsigned int[maxage];
+    
+    size_t r2s = fread(static_cast<void*>(&nindividuals), sizeof(unsigned int),1,f);
+    size_t r3s = fread(static_cast<void*>(ages),sizeof(unsigned int),maxage,f);
+    int rsum = r1s + r2s + r3s;
+
+#if DEBUG_LEVEL > 0
+    ostringstream dbuf;
+    dbuf << "nindividuals=" << nindividuals;
+    dbuf << " maxage=" << static_cast<unsigned int>(maxage);
+    dbuf << " ages: " << std::endl;
+    for(int i=0; i<maxage; ++i) {
+        dbuf << ages[i] << " ";
+    }
+    vpms::log << dbuf.str();
+#endif
+    
+    if(rsum != maxage + 2) {
+        ostringstream buf;
+        buf << "ERROR: improper number of objects read: " << rsum;
+        vpms::log << buf.str();
+    }
 }

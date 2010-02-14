@@ -13,7 +13,7 @@ TARGET   := vpms
 
 
 $(TARGET): $(OBJECTS)
-	$(CXX) $(LFLAGS) -o $@ $^
+	$(CXX) -o $@ $^ $(LFLAGS) 
 
 .SUFFIXES: .o .cc
 
