@@ -242,6 +242,13 @@ void check_avg() {
     }
 }
 
+extern "C" SCM get_numof_genomes() {
+
+    check_environment();
+    return scm_uint2num(vpms::env->GetNumOfGenomes());
+
+}
+
 extern "C" SCM get_state() {
 
     check_environment();
@@ -541,7 +548,7 @@ extern "C" SCM set_logging(SCM loggingb) {
 
 extern "C" void show_welcome() {
     cout << endl;
-    cout << "VPMS  Copyright (C) 2009  Mikolaj Sitarz" << endl;
+    cout << "VPMS  Copyright (C) 2009-2010  Mikolaj Sitarz" << endl;
     cout << "This program comes with ABSOLUTELY NO WARRANTY; for details type `(warranty)'." << endl;
     cout << "This is free software, and you are welcome to redistribute it" << endl;
     cout << "under certain conditions; see LICENSE file details." << endl << endl;
@@ -578,6 +585,7 @@ void vpms_main (void *closure, int argc, char **argv)
     scm_c_define_gsubr("get-genome-ranking",0,1,0,(SCM (*)()) get_genome_ranking);
     scm_c_define_gsubr("get-time",0,0,0, get_time);
     scm_c_define_gsubr("get-genome-distribution",0,0,0, get_genome_distribution);
+    scm_c_define_gsubr("get-num-of-genomes",0,0,0, get_numof_genomes);
     scm_c_define_gsubr("_vpms-get-clusters-histogram",0,1,0,(SCM (*)()) get_cluster_histogram);
     scm_c_define_gsubr("_vpms-get-clusters",0,0,0, get_cluster_data);
 

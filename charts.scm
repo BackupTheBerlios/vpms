@@ -30,7 +30,7 @@
 (define (chart-genome)
   (plot-unset "logscale y")
   (plot-set "xlabel \"position\"")
-  (plot-set "ylabel \"avg value\"")
+  (plot-set "ylabel \"avg genome value\"")
   (plot-set "grid")
   (plot-unset "key")
   (plot (get-avg-genome) "with linespoints"))

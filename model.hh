@@ -96,7 +96,8 @@ public:
     RuntimeParams Runtime() const;
     unsigned int Time() const;
     double Diversity() const;
-  
+    unsigned int GetNumOfGenomes() const;
+
     multimap<unsigned int, genome> GetTopRank(int n = 8);
     map<unsigned int, unsigned int> GetClusters();
     map<unsigned int, unsigned int> GetClustersHistogram(int slices = 10);

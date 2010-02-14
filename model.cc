@@ -314,6 +314,17 @@ double Environment::Diversity() const {
   return 0.0;
 }
 
+unsigned int Environment::GetNumOfGenomes() const {
+    unordered_map<genome, GenomeData *>::const_iterator iter;
+    unsigned int numgens = 0;
+    for(iter=genomes.begin(); iter != genomes.end(); ++iter) {
+        if(iter->second->Size() != 0) {
+            numgens += 1;
+        }
+    }
+    return numgens;
+}
+
 // to be removed -  MortStructure() is sufficient
 vector <unsigned int> Environment::PopStructure() {
   vector <unsigned int> pop(sizeof(int)*8,0u);
