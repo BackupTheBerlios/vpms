@@ -242,10 +242,16 @@ void check_avg() {
     }
 }
 
-extern "C" SCM get_numof_genomes() {
+extern "C" SCM get_numof_genomes(SCM age_limit) {
 
     check_environment();
-    return scm_uint2num(vpms::env->GetNumOfGenomes());
+
+    int ilimit = 0;
+    if(scm_is_true(scm_number_p(age_limit))) {
+        ilimit = scm_to_int(age_limit);
+    }
+
+    return scm_uint2num(vpms::env->GetNumOfGenomes(ilimit));
 
 }
 
@@ -585,7 +591,7 @@ void vpms_main (void *closure, int argc, char **argv)
     scm_c_define_gsubr("get-genome-ranking",0,1,0,(SCM (*)()) get_genome_ranking);
     scm_c_define_gsubr("get-time",0,0,0, get_time);
     scm_c_define_gsubr("get-genome-distribution",0,0,0, get_genome_distribution);
-    scm_c_define_gsubr("get-num-of-genomes",0,0,0, get_numof_genomes);
+    scm_c_define_gsubr("get-num-of-genomes",0,1,0, (SCM (*)()) get_numof_genomes);
     scm_c_define_gsubr("_vpms-get-clusters-histogram",0,1,0,(SCM (*)()) get_cluster_histogram);
     scm_c_define_gsubr("_vpms-get-clusters",0,0,0, get_cluster_data);
 

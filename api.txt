@@ -14,9 +14,13 @@ Results:
 (get-population) - get population structure
 (get-mortality) - get population mortality
 (get-time) - get time of simulation (time step)
+(get-config) - gets current config
 (get-genome-ranking n) - get ranking of "n" most represented genomes (n=8 by default)
 (get-clusters) - get current genome clusters
 (get-clusters-histogram) - get current genome clusters histogram
+(get-num-of-genomes &optional minage) - get number of genotypes in population.
+   if optional minage argument is given - count only genomes with individuals
+   above "minage" age.
 
 Averages:
 =========
@@ -35,6 +39,13 @@ Other commands:
 (warranty) - display warranty
 
 
+Persistency:
+============
+(save-environment &optional file)
+(restore-environment &optional file)
+
+
 Examples:
 =========
 (print-list (get-mortality))
+

@@ -45,6 +45,7 @@ public:
     unsigned int VerhulstKill(double);
     unsigned int GiveBirth();
     unsigned int Size() const;
+    unsigned int SizeAboveAge(int) const;
     unsigned int Born() const;
     
     void UpdatePopStats(vector<unsigned int> &) const;
@@ -96,7 +97,7 @@ public:
     RuntimeParams Runtime() const;
     unsigned int Time() const;
     double Diversity() const;
-    unsigned int GetNumOfGenomes() const;
+    unsigned int GetNumOfGenomes(int) const;
 
     multimap<unsigned int, genome> GetTopRank(int n = 8);
     map<unsigned int, unsigned int> GetClusters();

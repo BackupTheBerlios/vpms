@@ -314,14 +314,27 @@ double Environment::Diversity() const {
   return 0.0;
 }
 
-unsigned int Environment::GetNumOfGenomes() const {
+unsigned int Environment::GetNumOfGenomes(int minage) const {
     unordered_map<genome, GenomeData *>::const_iterator iter;
     unsigned int numgens = 0;
-    for(iter=genomes.begin(); iter != genomes.end(); ++iter) {
-        if(iter->second->Size() != 0) {
-            numgens += 1;
+    
+    if(minage == 0) {
+        for(iter=genomes.begin(); iter != genomes.end(); ++iter) {
+            if(iter->second->Size() != 0) {
+                numgens += 1;
+            }
         }
     }
+    else {
+        for(iter=genomes.begin(); iter != genomes.end(); ++iter) {
+            if(iter->second->SizeAboveAge(minage) != 0) {
+                numgens += 1;
+            }
+        }
+    }
+    
+    
+
     return numgens;
 }
 
@@ -548,6 +561,16 @@ unsigned int GenomeData::Size() const {
   return nindividuals;
 }
 
+unsigned int GenomeData::SizeAboveAge(int ageLimit) const {
+    unsigned int asize = 0;
+
+    for(int i=0; i<maxage; ++i) {
+        if(i >= ageLimit) {
+            asize += ages[i];
+        }
+    }
+    return asize;
+}
 
 
 void GenomeData::UpdatePopStats(vector<unsigned int> &pop) const {
