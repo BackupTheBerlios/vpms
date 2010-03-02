@@ -64,9 +64,11 @@
 	 (R (assoc-ref cfg 'R))
 	 (M (assoc-ref cfg 'M))
 	 (T (assoc-ref cfg 'T))
-	 (P (assoc-ref cfg 'P)))
+	 (P (assoc-ref cfg 'P))
+	 (cname (format "N~e-B~f-R~d-M~f-T~d-P~f-~6'0d" N B R M T P (get-time)))
+	 (cname (string-delete cname #\+)))
     (dump-4-charts (string-concatenate
-		    `("vp-" ,(format "N~e-B~f-~6'0d" N B (get-time)) ".png")))))
+		    `("vp-" ,cname ".png")))))
 
 (define (display-current-chart-and-calc-avg)
   (let ((fname (save-current-data-chart)))
