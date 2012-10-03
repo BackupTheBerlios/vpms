@@ -2,11 +2,7 @@ CXX=g++
 #CXXFLAGS=-g -Wall -std=c++0x -pg
 #CXXFLAGS=-g -Wall -std=c++0x -DDEBUG_LEVEL=2
 #CXXFLAGS=-g -Wall -std=c++0x -DDEBUG_LEVEL=1
-<<<<<<< local
-CXXFLAGS=-Wall -std=c++0x -O2 -march=native -fomit-frame-pointer
-=======
 CXXFLAGS=-Wall -std=c++0x -O2 -march=native -mtune=native -fomit-frame-pointer
->>>>>>> other
 LFLAGS=`guile-config link`
 
 SRC      := model.cc vpms.cc guile.cc config.cc stats.cc fileio.cc
